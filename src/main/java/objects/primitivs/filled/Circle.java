@@ -1,4 +1,4 @@
-package objects.primitivs;
+package objects.primitivs.filled;
 
 import objects.GameObject;
 import org.joml.Vector2f;
@@ -7,10 +7,9 @@ import org.joml.Vector4f;
 public final class Circle extends GameObject {
     private static final float DETAIL_COUNT = 120.0f;
 
-    @Override
-    protected Vector2f[] setBaseCornerPoints() {
+    private static final Vector2f[] basePoints = new Vector2f[(int) DETAIL_COUNT * 3];
+    static {
         int segments = (int) DETAIL_COUNT;
-        Vector2f[] points = new Vector2f[segments * 3];
         Vector2f center = new Vector2f(0.5f, 0.5f);
 
         for (int i = 0; i < segments; i++) {
@@ -27,14 +26,16 @@ public final class Circle extends GameObject {
                     0.5f + 0.5f * (float) Math.sin(angle2)
             );
 
-            points[i * 3] = center;
-            points[i * 3 + 1] = p1;
-            points[i * 3 + 2] = p2;
+            basePoints[i * 3] = center;
+            basePoints[i * 3 + 1] = p1;
+            basePoints[i * 3 + 2] = p2;
         }
-
-        return points;
     }
 
+    @Override
+    protected Vector2f[] setBaseCornerPoints() {
+        return basePoints;
+    }
 
     @Override
     protected boolean shouldStaticColorBeUsed() {

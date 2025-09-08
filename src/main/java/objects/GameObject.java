@@ -17,12 +17,16 @@ import static org.lwjgl.system.MemoryUtil.memAllocFloat;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
 public abstract class GameObject implements Renderable{
+    protected int drawMode = GL_TRIANGLES;
     protected int vaoId;
     protected int vboId;
+
     protected Vector2f[] cornerPoints;
     protected Matrix4f model = new Matrix4f().identity();
+
     protected boolean useStaticColor = false;
     protected Vector4f staticColor = new Vector4f(1.0f,1.0f,1.0f,1.0f);
+
     protected abstract Vector2f[] setBaseCornerPoints();
     protected abstract boolean shouldStaticColorBeUsed();
     protected abstract Vector4f setStaticColor();
@@ -116,7 +120,7 @@ public abstract class GameObject implements Renderable{
         }
 
         // Zeichnen
-        glDrawArrays(GL_TRIANGLES, 0, cornerPoints.length);
+        glDrawArrays(drawMode, 0, cornerPoints.length);
         checkGLError("glDrawArrays");
 
         // VAO unbinden

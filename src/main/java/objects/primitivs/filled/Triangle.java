@@ -1,4 +1,4 @@
-package objects.primitivs;
+package objects.primitivs.filled;
 
 import objects.GameObject;
 import org.joml.Vector2f;
@@ -6,7 +6,7 @@ import org.joml.Vector4f;
 
 public final class Triangle extends GameObject {
     private void setBaseSettings() {
-        this.model.scale(100, 100, 100);
+        this.model.scale(100, 100, 1);
     }
 
     public Triangle() {
