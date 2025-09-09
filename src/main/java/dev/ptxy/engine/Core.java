@@ -1,6 +1,7 @@
 package dev.ptxy.engine;
 
 import dev.ptxy.engine.shader.ShaderCompiler;
+import dev.ptxy.engine_demos.SceneRenderer;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -13,9 +14,12 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class Core {
-    public void run() {
+    public Core() {
         init();
-        loop();
+    }
+
+    public void run(SceneRenderer sceneRenderer) {
+        loop(sceneRenderer);
         GameWindow.clearWindow();
         glfwTerminate();
         glfwSetErrorCallback(null).free();
@@ -58,21 +62,15 @@ public final class Core {
         glfwFocusWindow(GameWindow.getActiveWindow().getWindowHandle());
     }
 
-        private void loop() {
+        private void loop(SceneRenderer sceneRenderer) {
             GL.createCapabilities();
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl","dev/ptxy/engine/shader/fragment.glsl");
 
-            //Simple close Window Handling
-            glfwSetKeyCallback(GameWindow.getActiveWindow().getWindowHandle(), (window, key, scancode, action, mods) -> {
-                if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-                    glfwSetWindowShouldClose(window, true);
-            });
-
             while ( !glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle()) ) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                SceneRenderer.renderScene();
+                sceneRenderer.renderScene();
 
                 glfwSwapBuffers(GameWindow.getActiveWindow().getWindowHandle());
 

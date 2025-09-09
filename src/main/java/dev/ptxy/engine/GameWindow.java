@@ -31,7 +31,7 @@ public final class GameWindow {
 
     public static GameWindow getActiveWindow() {
         if (currentActiveWindow != null) return currentActiveWindow;
-        throw new RuntimeException("Tryed to get the current Window Object before Instanciating it (Window Object was null)");
+        throw new RuntimeException("Tryed to get the current Window Object before Instanciating it (Window Object was null Core Class must be instantiated first)");
     }
 
     public static void createWindow(Integer width, Integer height, String title, Long monitor, Long share) {
