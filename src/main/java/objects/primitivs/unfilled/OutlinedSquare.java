@@ -6,7 +6,7 @@ import org.joml.Vector4f;
 
 import static org.lwjgl.opengl.GL11.GL_LINES;
 
-public class OutlinedSquare extends GameObject {
+public final class OutlinedSquare extends GameObject {
     private static final Vector2f[] basePoints = new Vector2f[]{
             new Vector2f(0.0f, 1.0f),
             new Vector2f(0.0f, 0.0f),

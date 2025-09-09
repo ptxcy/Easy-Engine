@@ -80,7 +80,7 @@ public abstract class GameObject implements Renderable {
     }
 
     @Override
-    public void render(Matrix4f projection) {
+    public void render(Matrix4f projection, Matrix4f viewMatrix) {
         // Shader aktivieren
         glUseProgram(ShaderCompiler.shaderProgramId);
         checkGLError("glUseProgram");
@@ -120,6 +120,19 @@ public abstract class GameObject implements Renderable {
             checkGLError("glUniformMatrix4fv (model)");
         } else {
             System.err.println("WARN: model uniform not found.");
+        }
+
+        // View setzen
+        if (viewMatrix != null) {
+            int viewMatrixLocation = glGetUniformLocation(ShaderCompiler.shaderProgramId, "view");
+            if (viewMatrixLocation != -1) {
+                FloatBuffer viewBuffer = BufferUtils.createFloatBuffer(16);
+                model.get(viewBuffer);
+                glUniformMatrix4fv(viewMatrixLocation, false, viewBuffer);
+                checkGLError("glUniformMatrix4fv (view)");
+            } else {
+                System.err.println("WARN: view uniform not found.");
+            }
         }
 
         // Zeichnen

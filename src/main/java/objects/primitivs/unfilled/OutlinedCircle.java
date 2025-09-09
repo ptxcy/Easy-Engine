@@ -6,7 +6,7 @@ import org.joml.Vector4f;
 
 import static org.lwjgl.opengl.GL11.GL_LINES;
 
-public class OutlinedCircle extends GameObject {
+public final class OutlinedCircle extends GameObject {
     private static final int DETAIL_COUNT = 120;
     private static final Vector2f[] basePoints;
 
