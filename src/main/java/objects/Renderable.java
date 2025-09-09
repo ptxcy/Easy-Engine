@@ -1,7 +1,7 @@
 package objects;
 
-import org.joml.Matrix4f;
+import camera.SimpleCamera;
 
 public interface Renderable {
-    void render(Matrix4f projection, Matrix4f view);
+    void render(SimpleCamera camera);
 }

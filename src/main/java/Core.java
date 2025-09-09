@@ -62,8 +62,6 @@ public final class Core {
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             ShaderCompiler.initShader("shader/vertex.glsl","shader/fragment.glsl");
 
-            Matrix4f projection = new Matrix4f().ortho2D(0, GameWindow.getActiveWindow().getWidth(), 0, GameWindow.getActiveWindow().getHeight());
-
             //Simple close Window Handling
             glfwSetKeyCallback(GameWindow.getActiveWindow().getWindowHandle(), (window, key, scancode, action, mods) -> {
                 if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
@@ -73,7 +71,7 @@ public final class Core {
             while ( !glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle()) ) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                SceneRenderer.renderScene(projection);
+                SceneRenderer.renderScene();
 
                 glfwSwapBuffers(GameWindow.getActiveWindow().getWindowHandle());
 

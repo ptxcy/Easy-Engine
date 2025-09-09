@@ -1,5 +1,6 @@
 package objects;
 
+import camera.SimpleCamera;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -80,7 +81,7 @@ public abstract class GameObject implements Renderable {
     }
 
     @Override
-    public void render(Matrix4f projection, Matrix4f viewMatrix) {
+    public void render(SimpleCamera camera) {
         // Shader aktivieren
         glUseProgram(ShaderCompiler.shaderProgramId);
         checkGLError("glUseProgram");
