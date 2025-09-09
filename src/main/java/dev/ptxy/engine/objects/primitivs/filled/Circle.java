@@ -1,6 +1,6 @@
-package objects.primitivs.filled;
+package dev.ptxy.engine.objects.primitivs.filled;
 
-import objects.GameObject;
+import dev.ptxy.engine.objects.GameObject;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 

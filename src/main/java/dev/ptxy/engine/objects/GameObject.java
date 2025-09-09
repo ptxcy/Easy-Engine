@@ -1,11 +1,11 @@
-package objects;
+package dev.ptxy.engine.objects;
 
-import camera.SimpleCamera;
+import dev.ptxy.engine.camera.SimpleCamera2D;
+import dev.ptxy.engine.shader.ShaderCompiler;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
-import shader.ShaderCompiler;
 
 import java.nio.FloatBuffer;
 
@@ -81,7 +81,7 @@ public abstract class GameObject implements Renderable {
     }
 
     @Override
-    public void render(SimpleCamera camera) {
+    public void render(SimpleCamera2D camera) {
         // Shader aktivieren
         glUseProgram(ShaderCompiler.shaderProgramId);
         checkGLError("glUseProgram");
@@ -105,7 +105,8 @@ public abstract class GameObject implements Renderable {
         int projectionLocation = glGetUniformLocation(ShaderCompiler.shaderProgramId, "projection");
         if (projectionLocation != -1) {
             FloatBuffer projBuffer = BufferUtils.createFloatBuffer(16);
-            projection.get(projBuffer);
+            camera.getProjection()
+                .get(projBuffer);
             glUniformMatrix4fv(projectionLocation, false, projBuffer);
             checkGLError("glUniformMatrix4fv (projection)");
         } else {
@@ -124,17 +125,17 @@ public abstract class GameObject implements Renderable {
         }
 
         // View setzen
-        if (viewMatrix != null) {
-            int viewMatrixLocation = glGetUniformLocation(ShaderCompiler.shaderProgramId, "view");
-            if (viewMatrixLocation != -1) {
-                FloatBuffer viewBuffer = BufferUtils.createFloatBuffer(16);
-                model.get(viewBuffer);
-                glUniformMatrix4fv(viewMatrixLocation, false, viewBuffer);
-                checkGLError("glUniformMatrix4fv (view)");
-            } else {
-                System.err.println("WARN: view uniform not found.");
-            }
+        int viewMatrixLocation = glGetUniformLocation(ShaderCompiler.shaderProgramId, "view");
+        if (viewMatrixLocation != -1) {
+            FloatBuffer viewBuffer = BufferUtils.createFloatBuffer(16);
+            camera.getViewMatrix()
+                .get(viewBuffer);
+            glUniformMatrix4fv(viewMatrixLocation, false, viewBuffer);
+            checkGLError("glUniformMatrix4fv (view)");
+        } else {
+            System.err.println("WARN: view uniform not found.");
         }
+
 
         // Zeichnen
         glDrawArrays(drawMode, 0, cornerPoints.length);

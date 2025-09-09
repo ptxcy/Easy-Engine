@@ -1,15 +1,12 @@
-import camera.SimpleCamera;
-import objects.primitivs.filled.Circle;
-import objects.primitivs.filled.Square;
-import objects.primitivs.filled.Triangle;
-import objects.primitivs.unfilled.Line;
-import objects.primitivs.unfilled.OutlinedCircle;
-import objects.primitivs.unfilled.OutlinedSquare;
-import objects.primitivs.unfilled.OutlinedTriangle;
-import org.joml.Matrix4f;
+package dev.ptxy.engine;
+
+import dev.ptxy.engine.camera.SimpleCamera2D;
+import dev.ptxy.engine.objects.primitivs.filled.*;
+import dev.ptxy.engine.objects.primitivs.unfilled.*;
 
 public final class SceneRenderer {
-    private static SimpleCamera camera = new SimpleCamera();
+    private static SimpleCamera2D camera = new SimpleCamera2D();
+
     public static void renderScene() {
         new Triangle().moveTo2D(0,0).scale2D(100,100).render(camera);
         new Square().moveTo2D(105,0).scale2D(100,100).render(camera);

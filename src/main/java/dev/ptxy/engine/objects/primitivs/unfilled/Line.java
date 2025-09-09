@@ -1,20 +1,24 @@
-package objects.primitivs.filled;
+package dev.ptxy.engine.objects.primitivs.unfilled;
 
-import objects.GameObject;
+import dev.ptxy.engine.objects.GameObject;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public final class Square extends GameObject {
+import static org.lwjgl.opengl.GL11.GL_LINES;
+
+public final class Line extends GameObject {
     private static final Vector2f[] basePoints = new Vector2f[]{
-            //First Triangle
-            new Vector2f(0.0f, 1.0f),
             new Vector2f(0.0f, 0.0f),
-            new Vector2f(1.0f, 0.0f),
-            //Second Triangle
-            new Vector2f(0.0f, 1.0f),
-            new Vector2f(1.0f, 1.0f),
-            new Vector2f(1.0f, 0.0f)
+            new Vector2f(1.0f, 1.0f)
     };
+
+    public Line() {
+        overwriteDrawMode();
+    }
+
+    private void overwriteDrawMode() {
+        drawMode = GL_LINES;
+    }
 
     @Override
     protected Vector2f[] setBaseCornerPoints() {

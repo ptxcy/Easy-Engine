@@ -1,9 +1,10 @@
-import org.joml.Matrix4f;
+package dev.ptxy.engine;
+
+import dev.ptxy.engine.shader.ShaderCompiler;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
-import shader.ShaderCompiler;
 
 import java.nio.IntBuffer;
 
@@ -60,7 +61,7 @@ public final class Core {
         private void loop() {
             GL.createCapabilities();
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            ShaderCompiler.initShader("shader/vertex.glsl","shader/fragment.glsl");
+            ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl","dev/ptxy/engine/shader/fragment.glsl");
 
             //Simple close Window Handling
             glfwSetKeyCallback(GameWindow.getActiveWindow().getWindowHandle(), (window, key, scancode, action, mods) -> {
