@@ -14,12 +14,6 @@ public class Line extends GameObject {
 
     public Line() {
         overwriteDrawMode();
-        basicSetting();
-    }
-
-    private void basicSetting() {
-        model.translate(0, 100, 1);
-        model.scale(1000, 1, 1);
     }
 
     private void overwriteDrawMode() {

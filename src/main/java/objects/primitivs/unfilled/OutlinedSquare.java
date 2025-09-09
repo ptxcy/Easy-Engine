@@ -23,12 +23,6 @@ public class OutlinedSquare extends GameObject {
 
     public OutlinedSquare() {
         overwriteDrawMode();
-        basicSetting();
-    }
-
-    private void basicSetting() {
-        model.translate(125, 100, 0);
-        model.scale(100, 100, 1);
     }
 
     private void overwriteDrawMode() {

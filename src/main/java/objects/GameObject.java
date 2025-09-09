@@ -16,7 +16,7 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.system.MemoryUtil.memAllocFloat;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
-public abstract class GameObject implements Renderable{
+public abstract class GameObject implements Renderable {
     protected int drawMode = GL_TRIANGLES;
     protected int vaoId;
     protected int vboId;
@@ -25,10 +25,12 @@ public abstract class GameObject implements Renderable{
     protected Matrix4f model = new Matrix4f().identity();
 
     protected boolean useStaticColor = false;
-    protected Vector4f staticColor = new Vector4f(1.0f,1.0f,1.0f,1.0f);
+    protected Vector4f staticColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     protected abstract Vector2f[] setBaseCornerPoints();
+
     protected abstract boolean shouldStaticColorBeUsed();
+
     protected abstract Vector4f setStaticColor();
 
     protected int instanceVao() {
@@ -38,7 +40,8 @@ public abstract class GameObject implements Renderable{
     protected int instanceVbo() {
         FloatBuffer vertexBuffer = memAllocFloat(cornerPoints.length * 2);
         for (Vector2f v : cornerPoints) {
-            vertexBuffer.put(v.x).put(v.y);
+            vertexBuffer.put(v.x)
+                .put(v.y);
         }
         vertexBuffer.flip();
 
@@ -126,5 +129,16 @@ public abstract class GameObject implements Renderable{
         // VAO unbinden
         glBindVertexArray(0);
         glUseProgram(0);
+    }
+
+    public GameObject moveTo2D(float x, float y) {
+        this.model.identity()
+            .translate(x, y, 1);
+        return this;
+    }
+
+    public GameObject scale2D(float x, float y) {
+        this.model.scale(x, y, 1);
+        return this;
     }
 }

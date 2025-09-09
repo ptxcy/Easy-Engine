@@ -46,14 +46,4 @@ public final class Circle extends GameObject {
     protected Vector4f setStaticColor() {
         return new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
     }
-
-    public void setBasics() {
-        model.identity()
-                .translate(250.0f, 0.0f, 0.0f)
-                .scale(100.0f, 100.0f, 1.0f);
-    }
-
-    public Circle() {
-        setBasics();
-    }
 }

@@ -33,12 +33,6 @@ public class OutlinedCircle extends GameObject {
 
     public OutlinedCircle() {
         overwriteDrawMode();
-        basicSetting();
-    }
-
-    private void basicSetting() {
-        model.translate(250.0f, 100.0f, 0.0f);
-        model.scale(100.0f, 100.0f, 1.0f);
     }
 
     private void overwriteDrawMode() {

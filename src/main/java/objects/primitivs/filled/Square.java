@@ -30,13 +30,4 @@ public final class Square extends GameObject {
     protected Vector4f setStaticColor() {
         return new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
     }
-
-    public void setBasics() {
-        model.translate(125.0f, 0.0f, 0.0f);
-        model.scale(100, 100, 100);
-    }
-
-    public Square() {
-        setBasics();
-    }
 }

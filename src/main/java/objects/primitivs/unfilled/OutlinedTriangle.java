@@ -20,12 +20,6 @@ public class OutlinedTriangle extends GameObject {
 
     public OutlinedTriangle() {
         overwriteDrawMode();
-        basicSetting();
-    }
-
-    private void basicSetting() {
-        model.translate(0, 100, 0);
-        model.scale(100, 100, 1);
     }
 
     private void overwriteDrawMode() {

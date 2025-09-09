@@ -5,13 +5,6 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public final class Triangle extends GameObject {
-    private void setBaseSettings() {
-        this.model.scale(100, 100, 1);
-    }
-
-    public Triangle() {
-        setBaseSettings();
-    }
 
     private static final Vector2f[] basePoints = new Vector2f[]{
             new Vector2f(0.0f, 0.0f),
