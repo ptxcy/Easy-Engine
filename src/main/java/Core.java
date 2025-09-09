@@ -29,6 +29,14 @@ public final class Core {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+        // Mac Os hard dependency start
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        // Mac Os hard dependency end
+
         GameWindow.createWindowFromSystemProperties();
 
         try ( MemoryStack stack = stackPush() ) {
@@ -46,6 +54,7 @@ public final class Core {
         glfwMakeContextCurrent(GameWindow.getActiveWindow().getWindowHandle());
         glfwSwapInterval(1);
         glfwShowWindow(GameWindow.getActiveWindow().getWindowHandle());
+        glfwFocusWindow(GameWindow.getActiveWindow().getWindowHandle());
     }
 
         private void loop() {
