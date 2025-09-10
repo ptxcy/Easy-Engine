@@ -1,6 +1,6 @@
 package dev.ptxy.engine.objects.primitivs.unfilled;
 
-import dev.ptxy.engine.objects.GameObject;
+import dev.ptxy.engine.objects.primitivs.GameObject;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -45,8 +45,8 @@ public final class OutlinedCircle extends GameObject {
     }
 
     @Override
-    protected boolean shouldStaticColorBeUsed() {
-        return true;
+    protected ColorMode setColorMode() {
+        return ColorMode.STATIC;
     }
 
     @Override

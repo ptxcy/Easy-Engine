@@ -1,6 +1,7 @@
-package dev.ptxy.engine.objects;
+package dev.ptxy.engine.objects.primitivs;
 
 import dev.ptxy.engine.camera.SimpleCamera2D;
+import dev.ptxy.engine.objects.Renderable;
 import dev.ptxy.engine.shader.ShaderCompiler;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -18,19 +19,23 @@ import static org.lwjgl.system.MemoryUtil.memAllocFloat;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
 public abstract class GameObject implements Renderable {
+    public enum ColorMode {
+        STATIC,
+        SPRITE
+    }
+
     protected int drawMode = GL_TRIANGLES;
     protected int vaoId;
     protected int vboId;
-
+    protected ColorMode colorMode;
     protected Vector2f[] cornerPoints;
     protected Matrix4f model = new Matrix4f().identity();
 
-    protected boolean useStaticColor = false;
     protected Vector4f staticColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     protected abstract Vector2f[] setBaseCornerPoints();
 
-    protected abstract boolean shouldStaticColorBeUsed();
+    protected abstract ColorMode setColorMode();
 
     protected abstract Vector4f setStaticColor();
 
@@ -61,7 +66,7 @@ public abstract class GameObject implements Renderable {
 
     private void init() {
         cornerPoints = setBaseCornerPoints();
-        useStaticColor = shouldStaticColorBeUsed();
+        colorMode = setColorMode();
         staticColor = setStaticColor();
         vaoId = instanceVao();
         glBindVertexArray(vaoId);
@@ -91,7 +96,7 @@ public abstract class GameObject implements Renderable {
         checkGLError("glBindVertexArray");
 
         // Farbe setzen
-        if (useStaticColor) {
+        if (colorMode.equals(ColorMode.STATIC)) {
             int colorLocation = glGetUniformLocation(ShaderCompiler.shaderProgramId, "staticInputColor");
             if (colorLocation != -1) {
                 glUniform4f(colorLocation, staticColor.x, staticColor.y, staticColor.z, staticColor.w);
@@ -135,7 +140,6 @@ public abstract class GameObject implements Renderable {
         } else {
             System.err.println("WARN: view uniform not found.");
         }
-
 
         // Zeichnen
         glDrawArrays(drawMode, 0, cornerPoints.length);
