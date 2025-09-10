@@ -1,11 +1,62 @@
 package dev.ptxy.engine_demos;
 
+import dev.ptxy.engine.GameWindow;
 import dev.ptxy.engine.camera.SimpleCamera2D;
 import dev.ptxy.engine.objects.primitivs.filled.*;
 import dev.ptxy.engine.objects.primitivs.unfilled.*;
 
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
+
 public final class SceneRenderer {
     private SimpleCamera2D camera = new SimpleCamera2D();
+
+    public SceneRenderer(){
+        //Simple close Window Handling and WASD movement
+        glfwSetKeyCallback(GameWindow.getActiveWindow()
+                .getWindowHandle(), (window, key, scancode, action, mods) -> {
+            float moveSpeed = 10.0f;
+
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                glfwSetWindowShouldClose(window, true);
+            }
+
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                switch (key) {
+                    case GLFW_KEY_W:
+                        camera.getPosition().add(0.0f, moveSpeed, 0.0f);
+                        camera.updateCamera();
+                        break;
+                    case GLFW_KEY_S:
+                        camera.getPosition().add(0.0f, -moveSpeed, 0.0f);
+                        camera.updateCamera();
+                        break;
+                    case GLFW_KEY_A:
+                        camera.getPosition().add(-moveSpeed, 0.0f, 0.0f);
+                        camera.updateCamera();
+                        break;
+                    case GLFW_KEY_D:
+                        camera.getPosition().add(moveSpeed, 0.0f, 0.0f);
+                        camera.updateCamera();
+                        break;
+                    case GLFW_KEY_UP:
+                        camera.getScale().add(0.1f,0.1f,0f);
+                        camera.updateCamera();
+                        break;
+                    case GLFW_KEY_DOWN:
+                        camera.getScale().add(-0.1f,-0.1f,0f);
+                        camera.updateCamera();
+                        break;
+                }
+            }
+        });
+    }
 
     public void renderScene() {
         new Triangle().moveTo2D(0,0).scale2D(100,100).render(camera);

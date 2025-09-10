@@ -19,6 +19,7 @@ public class SimpleCamera2D {
     private final Matrix4f projection;
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Vector3f position = new Vector3f(0f,0f,0f);
+    private final Vector3f scale = new Vector3f(1f,1f,1f);
 
     public SimpleCamera2D() {
         projection = new Matrix4f().ortho2D(
@@ -26,41 +27,10 @@ public class SimpleCamera2D {
             0, GameWindow.getActiveWindow().getHeight()
         );
         updateCamera();
-
-        //Simple close Window Handling and WASD movement
-        glfwSetKeyCallback(GameWindow.getActiveWindow()
-            .getWindowHandle(), (window, key, scancode, action, mods) -> {
-            float moveSpeed = 10.0f;
-
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(window, true);
-            }
-
-            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
-                switch (key) {
-                    case GLFW_KEY_W:
-                        position.add(0.0f, moveSpeed, 0.0f);
-                        updateCamera();
-                        break;
-                    case GLFW_KEY_S:
-                        position.add(0.0f, -moveSpeed, 0.0f);
-                        updateCamera();
-                        break;
-                    case GLFW_KEY_A:
-                        position.add(-moveSpeed, 0.0f, 0.0f);
-                        updateCamera();
-                        break;
-                    case GLFW_KEY_D:
-                        position.add(moveSpeed, 0.0f, 0.0f);
-                        updateCamera();
-                        break;
-                }
-            }
-        });
     }
 
     public void updateCamera() {
-        viewMatrix.identity().scale(1.0f,1.0f,1f).translate(-position.x, -position.y, 0f);
+        viewMatrix.identity().scale(scale).translate(-position.x, -position.y, 0f);
     }
 
     public void setPosition(Vector3f pos) {
@@ -69,7 +39,11 @@ public class SimpleCamera2D {
     }
 
     public Vector3f getPosition() {
-        return new Vector3f(position);
+        return position;
+    }
+
+    public Vector3f getScale() {
+        return scale;
     }
 
     public Matrix4f getViewMatrix() {
