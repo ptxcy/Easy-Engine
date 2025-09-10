@@ -11,7 +11,7 @@ public final class OutlinedCircle extends GameObject {
     private static final Vector2f[] basePoints;
 
     static {
-        basePoints = new Vector2f[DETAIL_COUNT * 2];  // je 2 Punkte pro Linie
+        basePoints = new Vector2f[DETAIL_COUNT * 2];
 
         for (int i = 0; i < DETAIL_COUNT; i++) {
             float angle1 = (float) (2 * Math.PI * i / DETAIL_COUNT);
