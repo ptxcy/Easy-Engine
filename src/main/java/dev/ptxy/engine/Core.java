@@ -64,7 +64,7 @@ public final class Core {
 
         private void loop(SceneRenderer sceneRenderer) {
             GL.createCapabilities();
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl","dev/ptxy/engine/shader/fragment.glsl");
 
             while ( !glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle()) ) {

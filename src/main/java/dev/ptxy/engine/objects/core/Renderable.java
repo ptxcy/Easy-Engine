@@ -1,4 +1,4 @@
-package dev.ptxy.engine.objects;
+package dev.ptxy.engine.objects.core;
 
 import dev.ptxy.engine.camera.SimpleCamera2D;
 

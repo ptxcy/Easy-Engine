@@ -1,10 +1,11 @@
 package dev.ptxy.engine.objects.primitivs.filled;
 
-import dev.ptxy.engine.objects.primitivs.GameObject;
+import dev.ptxy.engine.objects.core.PrimitiveGameObject;
+import dev.ptxy.engine.objects.texture.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public final class Triangle extends GameObject {
+public final class Triangle extends PrimitiveGameObject {
 
     private static final Vector2f[] basePoints = new Vector2f[]{
             new Vector2f(0.0f, 0.0f),
@@ -13,18 +14,17 @@ public final class Triangle extends GameObject {
     };
 
     @Override
-    protected  Vector2f[] setBaseCornerPoints() {
+    protected Vector2f[] setBaseCornerPoints() {
         return basePoints;
-    }
-
-    @Override
-    protected ColorMode setColorMode() {
-        return ColorMode.STATIC;
     }
 
     @Override
     protected Vector4f setStaticColor() {
         return new Vector4f(0.0f, 0.0f, 1.0f, 1.0f);
+    }
+
+    public Triangle(){
+        this.init();
     }
 }
 

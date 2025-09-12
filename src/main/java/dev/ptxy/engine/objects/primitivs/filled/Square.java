@@ -1,10 +1,11 @@
 package dev.ptxy.engine.objects.primitivs.filled;
 
-import dev.ptxy.engine.objects.primitivs.GameObject;
+import dev.ptxy.engine.objects.core.PrimitiveGameObject;
+import dev.ptxy.engine.objects.texture.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public final class Square extends GameObject {
+public final class Square extends PrimitiveGameObject {
     private static final Vector2f[] basePoints = new Vector2f[]{
             //First Triangle
             new Vector2f(0.0f, 1.0f),
@@ -22,12 +23,11 @@ public final class Square extends GameObject {
     }
 
     @Override
-    protected ColorMode setColorMode() {
-        return ColorMode.STATIC;
-    }
-
-    @Override
     protected Vector4f setStaticColor() {
         return new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    public Square(){
+        this.init();
     }
 }

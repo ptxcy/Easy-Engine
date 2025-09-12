@@ -4,6 +4,7 @@ import dev.ptxy.engine.GameWindow;
 import dev.ptxy.engine.camera.SimpleCamera2D;
 import dev.ptxy.engine.objects.primitivs.filled.*;
 import dev.ptxy.engine.objects.primitivs.unfilled.*;
+import dev.ptxy.engine.objects.texture.TexturedSquare;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
@@ -15,7 +16,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public final class SceneRenderer {
-    private SimpleCamera2D camera = new SimpleCamera2D();
+    private final SimpleCamera2D camera = new SimpleCamera2D();
 
     public SceneRenderer(){
         //Simple close Window Handling and WASD movement
@@ -59,6 +60,7 @@ public final class SceneRenderer {
     }
 
     public void renderScene() {
+        TextureCollection collection = new TextureCollection();
         new Triangle().moveTo2D(0,0).scale2D(100,100).render(camera);
         new Square().moveTo2D(105,0).scale2D(100,100).render(camera);
         new Circle().moveTo2D(210,0).scale2D(100,100).render(camera);
@@ -66,5 +68,6 @@ public final class SceneRenderer {
         new OutlinedTriangle().moveTo2D(0,110).scale2D(100,100).render(camera);
         new OutlinedSquare().moveTo2D(105,110).scale2D(100,100).render(camera);
         new OutlinedCircle().moveTo2D(210,110).scale2D(100,100).render(camera);
+        new TexturedSquare(collection.defaultTexture).moveTo2D(400,400).scale2D(100,100).render(camera);
     }
 }

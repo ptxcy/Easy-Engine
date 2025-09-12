@@ -1,12 +1,13 @@
 package dev.ptxy.engine.objects.primitivs.unfilled;
 
-import dev.ptxy.engine.objects.primitivs.GameObject;
+import dev.ptxy.engine.objects.core.PrimitiveGameObject;
+import dev.ptxy.engine.objects.texture.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import static org.lwjgl.opengl.GL11.GL_LINES;
 
-public final class OutlinedSquare extends GameObject {
+public final class OutlinedSquare extends PrimitiveGameObject {
     private static final Vector2f[] basePoints = new Vector2f[]{
             new Vector2f(0.0f, 1.0f),
             new Vector2f(0.0f, 0.0f),
@@ -23,6 +24,7 @@ public final class OutlinedSquare extends GameObject {
 
     public OutlinedSquare() {
         overwriteDrawMode();
+        this.init();
     }
 
     private void overwriteDrawMode() {
@@ -32,11 +34,6 @@ public final class OutlinedSquare extends GameObject {
     @Override
     protected Vector2f[] setBaseCornerPoints() {
         return basePoints;
-    }
-
-    @Override
-    protected ColorMode setColorMode() {
-        return ColorMode.STATIC;
     }
 
     @Override

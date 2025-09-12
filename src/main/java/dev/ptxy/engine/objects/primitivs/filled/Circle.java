@@ -1,10 +1,11 @@
 package dev.ptxy.engine.objects.primitivs.filled;
 
-import dev.ptxy.engine.objects.primitivs.GameObject;
+import dev.ptxy.engine.objects.core.PrimitiveGameObject;
+import dev.ptxy.engine.objects.texture.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public final class Circle extends GameObject {
+public final class Circle extends PrimitiveGameObject {
     private static final float DETAIL_COUNT = 120.0f;
 
     private static final Vector2f[] basePoints = new Vector2f[(int) DETAIL_COUNT * 3];
@@ -38,12 +39,11 @@ public final class Circle extends GameObject {
     }
 
     @Override
-    protected ColorMode setColorMode() {
-        return null;
-    }
-
-    @Override
     protected Vector4f setStaticColor() {
         return new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
+    }
+
+    public Circle(){
+        this.init();
     }
 }
