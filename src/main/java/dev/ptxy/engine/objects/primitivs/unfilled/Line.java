@@ -13,8 +13,9 @@ public final class Line extends PrimitiveGameObject {
             new Vector2f(1.0f, 1.0f)
     };
 
-    public Line() {
+    public Line(Vector4f color) {
         overwriteDrawMode();
+        this.staticColor = color;
         this.init();
     }
 
@@ -29,6 +30,6 @@ public final class Line extends PrimitiveGameObject {
 
     @Override
     protected Vector4f setStaticColor() {
-        return new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
+        return staticColor;
     }
 }

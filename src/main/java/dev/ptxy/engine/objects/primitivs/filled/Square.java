@@ -1,7 +1,6 @@
 package dev.ptxy.engine.objects.primitivs.filled;
 
 import dev.ptxy.engine.objects.core.PrimitiveGameObject;
-import dev.ptxy.engine.objects.texture.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -24,10 +23,11 @@ public final class Square extends PrimitiveGameObject {
 
     @Override
     protected Vector4f setStaticColor() {
-        return new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
+        return staticColor;
     }
 
-    public Square(){
+    public Square(Vector4f color){
+        this.staticColor = color;
         this.init();
     }
 }

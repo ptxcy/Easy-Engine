@@ -20,10 +20,11 @@ public final class Triangle extends PrimitiveGameObject {
 
     @Override
     protected Vector4f setStaticColor() {
-        return new Vector4f(0.0f, 0.0f, 1.0f, 1.0f);
+        return staticColor;
     }
 
-    public Triangle(){
+    public Triangle(Vector4f color){
+        this.staticColor = color;
         this.init();
     }
 }

@@ -32,8 +32,9 @@ public final class OutlinedCircle extends PrimitiveGameObject {
         }
     }
 
-    public OutlinedCircle() {
+    public OutlinedCircle(Vector4f color) {
         overwriteDrawMode();
+        this.staticColor = color;
         this.init();
     }
 
@@ -48,6 +49,6 @@ public final class OutlinedCircle extends PrimitiveGameObject {
 
     @Override
     protected Vector4f setStaticColor() {
-        return new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
+        return staticColor;
     }
 }
