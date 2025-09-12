@@ -7,8 +7,6 @@ import dev.ptxy.engine.objects.primitivs.unfilled.*;
 import dev.ptxy.engine.objects.texture.TexturedSquare;
 import org.joml.Vector4f;
 
-import java.util.Vector;
-
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
@@ -18,10 +16,10 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
-public final class SceneRenderer {
+public final class Scene implements dev.ptxy.engine.render.SceneRenderer {
     private final SimpleCamera2D camera = new SimpleCamera2D();
 
-    public SceneRenderer(){
+    public Scene(){
         //Simple close Window Handling and WASD movement
         glfwSetKeyCallback(GameWindow.getActiveWindow()
                 .getWindowHandle(), (window, key, scancode, action, mods) -> {

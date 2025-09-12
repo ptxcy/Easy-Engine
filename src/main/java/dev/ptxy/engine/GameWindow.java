@@ -1,15 +1,11 @@
 package dev.ptxy.engine;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public final class GameWindow {
-    private static final Logger LOG = LoggerFactory.getLogger(GameWindow.class.getName());
     private static GameWindow currentActiveWindow;
     private final Integer width;
     private final Integer height;
@@ -55,7 +51,6 @@ public final class GameWindow {
         long monitor = Long.parseLong(System.getProperty("WINDOW_MONITOR", "0"));
         long share = Long.parseLong(System.getProperty("WINDOW_SHARE", "0"));
         currentActiveWindow = new GameWindow(width, height, title, monitor, share);
-        LOG.info("Instantiated Window with Attributes: {}", currentActiveWindow);
     }
 
     public static void clearWindow() {
