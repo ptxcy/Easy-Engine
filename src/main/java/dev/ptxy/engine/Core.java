@@ -1,5 +1,6 @@
 package dev.ptxy.engine;
 
+import dev.ptxy.engine.render.SceneRenderer;
 import dev.ptxy.engine.shader.ShaderCompiler;
 import dev.ptxy.engine_demos.Scene;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -18,7 +19,7 @@ public final class Core {
         init();
     }
 
-    public void run(Scene sceneRenderer) {
+    public void run(SceneRenderer sceneRenderer) {
         loop(sceneRenderer);
         GameWindow.clearWindow();
         glfwTerminate();
@@ -62,7 +63,7 @@ public final class Core {
         glfwFocusWindow(GameWindow.getActiveWindow().getWindowHandle());
     }
 
-        private void loop(Scene sceneRenderer) {
+        private void loop(SceneRenderer sceneRenderer) {
             GL.createCapabilities();
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl","dev/ptxy/engine/shader/fragment.glsl");
