@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'dev.ptxcy.game'
-version = '0.1-release'
+version = '0.2-release'
 project.ext.lwjglVersion = "3.3.6"
 project.ext.jomlVersion = "1.10.8"
 
