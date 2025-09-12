@@ -3,6 +3,7 @@ package dev.ptxy.engine;
 import dev.ptxy.engine.render.SceneRenderer;
 import dev.ptxy.engine.shader.ShaderCompiler;
 import dev.ptxy.engine_demos.Scene;
+import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -15,8 +16,14 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class Core {
+    private Vector4f clearColor = new Vector4f(0f, 0f, 0f, 0f);
+
     public Core() {
         init();
+    }
+
+    public void changeClearColor(Vector4f color){
+        this.clearColor = color;
     }
 
     public void run(SceneRenderer sceneRenderer) {
@@ -28,7 +35,7 @@ public final class Core {
 
     private void init() {
         GLFWErrorCallback.createPrint(System.err).set();
-        if ( !glfwInit() ){
+        if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
@@ -45,7 +52,7 @@ public final class Core {
 
         GameWindow.createWindowFromSystemProperties();
 
-        try ( MemoryStack stack = stackPush() ) {
+        try (MemoryStack stack = stackPush()) {
             IntBuffer pWidth = stack.mallocInt(1);
             IntBuffer pHeight = stack.mallocInt(1);
             glfwGetWindowSize(GameWindow.getActiveWindow().getWindowHandle(), pWidth, pHeight);
@@ -63,19 +70,19 @@ public final class Core {
         glfwFocusWindow(GameWindow.getActiveWindow().getWindowHandle());
     }
 
-        private void loop(SceneRenderer sceneRenderer) {
-            GL.createCapabilities();
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl","dev/ptxy/engine/shader/fragment.glsl");
+    private void loop(SceneRenderer sceneRenderer) {
+        GL.createCapabilities();
+        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+        ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl", "dev/ptxy/engine/shader/fragment.glsl");
 
-            while ( !glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle()) ) {
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        while (!glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle())) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                sceneRenderer.renderScene();
+            sceneRenderer.renderScene();
 
-                glfwSwapBuffers(GameWindow.getActiveWindow().getWindowHandle());
+            glfwSwapBuffers(GameWindow.getActiveWindow().getWindowHandle());
 
-                glfwPollEvents();
-            }
+            glfwPollEvents();
         }
+    }
 }
