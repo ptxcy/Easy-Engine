@@ -16,7 +16,7 @@ import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class SimpleCamera2D {
-    //TODO Remove Hard Dependency
+    //TODO Remove Hard Dependency To Cory
     private final Matrix4f projection;
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Vector3f position = new Vector3f(0f,0f,0f);
