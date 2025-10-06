@@ -1,7 +1,6 @@
 package dev.ptxy.engine_demos;
 
 import dev.ptxy.engine.GameWindow;
-import dev.ptxy.engine.camera.SimpleCamera2D;
 import dev.ptxy.engine.objects.primitivs.filled.*;
 import dev.ptxy.engine.objects.primitivs.unfilled.*;
 import dev.ptxy.engine.objects.texture.TexturedSquare;

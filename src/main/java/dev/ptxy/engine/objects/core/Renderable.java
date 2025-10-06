@@ -1,7 +1,7 @@
 package dev.ptxy.engine.objects.core;
 
-import dev.ptxy.engine.camera.SimpleCamera2D;
+import dev.ptxy.engine.camera.Camera;
 
 public interface Renderable {
-    void render(SimpleCamera2D camera);
+    void render(Camera camera);
 }

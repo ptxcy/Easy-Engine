@@ -1,6 +1,6 @@
 package dev.ptxy.engine.objects.core;
 
-import dev.ptxy.engine.camera.SimpleCamera2D;
+import dev.ptxy.engine.camera.Camera;
 import dev.ptxy.engine.objects.primitivs.GameObject;
 import dev.ptxy.engine.shader.ShaderCompiler;
 import org.joml.Vector4f;
@@ -15,7 +15,7 @@ public abstract class PrimitiveGameObject extends GameObject {
     protected Vector4f staticColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     @Override
-    public void render(SimpleCamera2D camera) {
+    public void render(Camera camera) {
         if(!isInitialized){
             throw new RuntimeException("Render Method of object was called but the object was never initilized!");
         }

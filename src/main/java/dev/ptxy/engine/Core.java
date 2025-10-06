@@ -2,7 +2,6 @@ package dev.ptxy.engine;
 
 import dev.ptxy.engine.render.SceneRenderer;
 import dev.ptxy.engine.shader.ShaderCompiler;
-import dev.ptxy.engine_demos.Scene;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;

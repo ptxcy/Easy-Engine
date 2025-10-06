@@ -1,6 +1,6 @@
 package dev.ptxy.engine.objects.core;
 
-import dev.ptxy.engine.camera.SimpleCamera2D;
+import dev.ptxy.engine.camera.Camera;
 import dev.ptxy.engine.objects.primitivs.GameObject;
 import dev.ptxy.engine.objects.texture.Texture;
 import dev.ptxy.engine.shader.ShaderCompiler;
@@ -41,7 +41,7 @@ public abstract class TexturedGameObject extends GameObject {
     }
 
     @Override
-    public void render(SimpleCamera2D camera) {
+    public void render(Camera camera) {
         if(!isInitialized){
             throw new RuntimeException("Render Method of object was called but the object was never initilized!");
         }
