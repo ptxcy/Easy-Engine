@@ -74,6 +74,7 @@ public final class Core {
         ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl", "dev/ptxy/engine/shader/fragment.glsl");
 
         while (!glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle())) {
+            glEnable(GL_DEPTH_TEST);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             sceneRenderer.renderScene();

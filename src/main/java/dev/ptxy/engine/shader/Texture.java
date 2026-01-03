@@ -22,7 +22,7 @@ public class Texture {
         IntBuffer widthBuffer = BufferUtils.createIntBuffer(1);
         IntBuffer heightBuffer = BufferUtils.createIntBuffer(1);
         IntBuffer channelsBuffer = BufferUtils.createIntBuffer(1);
-        STBImage.stbi_set_flip_vertically_on_load(true);
+        STBImage.stbi_set_flip_vertically_on_load(false);
         ByteBuffer imageData = STBImage.stbi_load(filePath, widthBuffer, heightBuffer, channelsBuffer, 4);
         if (imageData == null) {
             imageData = STBImage.stbi_load(defaultTexturePath, widthBuffer, heightBuffer, channelsBuffer, 4);
