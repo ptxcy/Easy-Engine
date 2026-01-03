@@ -1,4 +1,4 @@
-package dev.ptxy.engine.objects.texture;
+package dev.ptxy.engine.shader;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;

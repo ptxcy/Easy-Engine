@@ -1,4 +1,4 @@
-package dev.ptxy.engine.render;
+package dev.ptxy.engine.core;
 
 public interface SceneRenderer {
     public void renderScene();

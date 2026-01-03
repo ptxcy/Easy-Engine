@@ -1,17 +1,17 @@
 #version 410 core
 
 in vec2 fragTexCoords;
-in vec4 staticFragmentColor;
 
-uniform sampler2D spriteTexture;
-uniform int useTexture;
+uniform vec4 staticInputColor;
+uniform sampler2D textureSampler;
+uniform bool useTexture;
 
 out vec4 resultColor;
 
 void main() {
-    if (useTexture == 1) {
-        resultColor = texture(spriteTexture, fragTexCoords);
+    if (useTexture) {
+        resultColor = texture(textureSampler, fragTexCoords);
     } else {
-        resultColor = staticFragmentColor;
+        resultColor = staticInputColor;
     }
 }

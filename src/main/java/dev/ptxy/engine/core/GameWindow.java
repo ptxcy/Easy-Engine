@@ -1,4 +1,4 @@
-package dev.ptxy.engine;
+package dev.ptxy.engine.core;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.glfwCreateWindow;

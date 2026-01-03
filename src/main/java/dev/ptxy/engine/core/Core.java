@@ -1,6 +1,5 @@
-package dev.ptxy.engine;
+package dev.ptxy.engine.core;
 
-import dev.ptxy.engine.render.SceneRenderer;
 import dev.ptxy.engine.shader.ShaderCompiler;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
