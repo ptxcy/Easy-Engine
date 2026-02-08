@@ -1,10 +1,12 @@
-package dev.ptxy.engine.demos.pbr;
+package dev.ptxy.engine.GLTF;
 
 import dev.ptxy.engine.objects.AbstractMesh;
 import dev.ptxy.engine.objects.ChildMesh;
 import dev.ptxy.engine.objects.MasterMesh;
 import dev.ptxy.engine.objects.Triangle;
+import dev.ptxy.engine.objects.properties.Material;
 import dev.ptxy.engine.shader.Texture;
+import dev.ptxy.engine.util.AssetPaths;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -23,7 +25,7 @@ public class GLTFLoader {
 
     /** Lädt die Szene als MasterMesh mit allen Children */
     public static MasterMesh loadScene(String path) {
-        AIScene scene = aiImportFile(path,
+        AIScene scene = aiImportFile(AssetPaths.asset(path).toString(),
             aiProcess_Triangulate |
                 aiProcess_JoinIdenticalVertices |
                 aiProcess_FlipUVs |
@@ -33,18 +35,16 @@ public class GLTFLoader {
         if (scene == null)
             throw new RuntimeException("Failed to load glTF: " + aiGetErrorString());
 
-        String baseDir = path.substring(0, path.lastIndexOf('/') + 1);
-
         MasterMesh master = new MasterMesh(new ArrayList<>());
 
         //TODO Provided MasterMesh but needs childmesh
-        processNode(scene.mRootNode(), scene, master, baseDir);
+        processNode(scene.mRootNode(), scene, master);
 
         return master;
     }
 
     /** Rekursive Verarbeitung von Nodes */
-    private static void processNode(AINode node, AIScene scene, AbstractMesh parent, String baseDir) {
+    private static void processNode(AINode node, AIScene scene, AbstractMesh parent) {
         Matrix4f localTransform = assimpMatrixToJOML(node.mTransformation());
 
         List<Triangle> nodeTriangles = new ArrayList<>();
@@ -56,9 +56,9 @@ public class GLTFLoader {
 
             AIMaterial aiMat = AIMaterial.create(scene.mMaterials().get(mesh.mMaterialIndex()));
             Material mat = loadMaterialFromNode(aiMat);
-            Texture baseColorTex = loadTextureFromMaterial(aiMat, aiTextureType_BASE_COLOR, baseDir);
-            Texture metallicRoughnessTex = loadTextureFromMaterial(aiMat, aiTextureType_METALNESS, baseDir);
-            Texture normalMapTex = loadTextureFromMaterial(aiMat, aiTextureType_NORMALS, baseDir);
+            Texture baseColorTex = loadTextureFromMaterial(aiMat, aiTextureType_BASE_COLOR);
+            Texture metallicRoughnessTex = loadTextureFromMaterial(aiMat, aiTextureType_METALNESS);
+            Texture normalMapTex = loadTextureFromMaterial(aiMat, aiTextureType_NORMALS);
 
             ChildMesh child = new ChildMesh(triangles);
             child.setMaterial(mat);
@@ -76,7 +76,7 @@ public class GLTFLoader {
 
         for (int i = 0; i < node.mNumChildren(); i++) {
             AINode childNode = AINode.create(node.mChildren().get(i));
-            processNode(childNode, scene, child, baseDir);
+            processNode(childNode, scene, child);
         }
     }
 
@@ -156,13 +156,13 @@ public class GLTFLoader {
         return material;
     }
 
-    private static Texture loadTextureFromMaterial(AIMaterial mat, int texType, String baseDir) {
+    private static Texture loadTextureFromMaterial(AIMaterial mat, int texType) {
         AIString texPath = AIString.calloc();
         Texture texture = null;
 
         if (aiGetMaterialTexture(mat, texType, 0, texPath, (IntBuffer)null, null, null, null, null, null) == 0) {
             String texFile = texPath.dataString();
-            texture = new Texture(baseDir + texFile);
+            texture = new Texture(AssetPaths.asset(texFile).toString());
         }
 
         texPath.free();

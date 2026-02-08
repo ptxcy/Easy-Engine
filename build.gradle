@@ -9,6 +9,12 @@ version = '0.2-release'
 project.ext.lwjglVersion = "3.3.6"
 project.ext.jomlVersion = "1.10.8"
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
+}
+
 switch (OperatingSystem.current()) {
     case OperatingSystem.LINUX:
         project.ext.lwjglNatives = "natives-linux"
@@ -63,10 +69,33 @@ dependencies {
     implementation "org.joml:joml:${jomlVersion}"
 }
 
+tasks.register("copyAssets", Copy) {
+    from("assets")
+    into(layout.buildDirectory.dir("libs/assets"))
+}
+
+tasks.named("build") {
+    dependsOn("copyAssets")
+}
+
+tasks.register("runEngine", Exec) {
+    group = "application"
+    description = "Builds and runs the engine JAR"
+
+    dependsOn tasks.build
+
+    workingDir = layout.buildDirectory.dir("libs").get().asFile
+    commandLine(
+            "java",
+            "-jar",
+            jar.archiveFile.get().asFile.name
+    )
+}
+
 jar {
     manifest {
         attributes(
-                'Main-Class': 'dev.ptxy.engine_demos.Launcher'
+                'Main-Class': 'dev.ptxy.engine.PbrTestLauncher'
         )
     }
 

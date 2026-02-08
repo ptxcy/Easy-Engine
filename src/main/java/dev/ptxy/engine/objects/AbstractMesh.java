@@ -1,6 +1,6 @@
 package dev.ptxy.engine.objects;
 
-import dev.ptxy.engine.demos.pbr.Material;
+import dev.ptxy.engine.objects.properties.Material;
 import dev.ptxy.engine.shader.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

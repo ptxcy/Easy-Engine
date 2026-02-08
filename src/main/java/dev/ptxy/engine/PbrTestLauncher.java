@@ -1,10 +1,13 @@
-package dev.ptxy.engine.demos.pbr;
+package dev.ptxy.engine;
 
+import dev.ptxy.engine.GLTF.GLTFLoader;
 import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.core.Core;
 import dev.ptxy.engine.core.SceneRenderer;
+import dev.ptxy.engine.light.PointLight;
 import dev.ptxy.engine.objects.MasterMesh;
 import dev.ptxy.engine.objects.Triangle;
+import dev.ptxy.engine.objects.properties.Material;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -34,7 +37,7 @@ public class PbrTestLauncher implements SceneRenderer {
         handleInput();
 
         if (triangles == null) {
-            String absolutChessPath = "/Users/pkl/git clones/Easy-Engine/src/main/resources/dev/ptxy/engine/objects/grass_medium_01_4k.gltf";
+            String absolutChessPath = "grass_medium_01_4k.gltf";;
             triangles = new ArrayList<>();
             triangles.add(GLTFLoader.loadScene(absolutChessPath));
 

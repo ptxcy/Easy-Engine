@@ -1,6 +1,5 @@
 package dev.ptxy.engine.objects;
 
-import dev.ptxy.engine.demos.pbr.Material;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 

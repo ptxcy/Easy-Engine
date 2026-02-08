@@ -1,7 +1,7 @@
 package dev.ptxy.engine.objects;
 
 import dev.ptxy.engine.camera.Camera;
-import dev.ptxy.engine.demos.pbr.PointLight;
+import dev.ptxy.engine.light.PointLight;
 import org.joml.Matrix4f;
 import java.util.List;
 

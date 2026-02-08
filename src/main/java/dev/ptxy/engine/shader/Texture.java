@@ -1,5 +1,6 @@
 package dev.ptxy.engine.shader;
 
+import dev.ptxy.engine.util.AssetPaths;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;
 
@@ -12,7 +13,6 @@ import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class Texture {
-    private static final String defaultTexturePath = "src/main/resources/dev/ptxy/engine/objects/texture/default.png";
     private final int textureId;
     private final int width;
     private final int height;
@@ -25,7 +25,7 @@ public class Texture {
         STBImage.stbi_set_flip_vertically_on_load(false);
         ByteBuffer imageData = STBImage.stbi_load(filePath, widthBuffer, heightBuffer, channelsBuffer, 4);
         if (imageData == null) {
-            imageData = STBImage.stbi_load(defaultTexturePath, widthBuffer, heightBuffer, channelsBuffer, 4);
+            imageData = STBImage.stbi_load(AssetPaths.defaultTexture().toString(), widthBuffer, heightBuffer, channelsBuffer, 4);
             if (imageData == null) {
                 throw new RuntimeException("Failed to load a texture file: " + filePath + "\n" + STBImage.stbi_failure_reason());
             }

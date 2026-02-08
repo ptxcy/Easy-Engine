@@ -1,4 +1,4 @@
-package dev.ptxy.engine.demos.pbr;
+package dev.ptxy.engine.objects.properties;
 
 import org.joml.Vector3f;
 
@@ -7,7 +7,7 @@ public class Material {
     private float metallic = 0.0f;
     private float roughness = 0.5f;
     private float ao = 1.0f;
-    private float alpha = 1.0f; // Transparenz
+    private float alpha = 1.0f;
 
     // Getter
     public Vector3f getAlbedo() { return albedo; }

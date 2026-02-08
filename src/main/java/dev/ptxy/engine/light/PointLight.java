@@ -1,4 +1,4 @@
-package dev.ptxy.engine.demos.pbr;
+package dev.ptxy.engine.light;
 
 import org.joml.Vector3f;
 
