@@ -52,8 +52,7 @@ public class ShaderCompiler {
     }
 
     private static String readShaderFile(String path) {
-        try {
-            var stream = ShaderCompiler.class.getClassLoader().getResourceAsStream(path);
+        try (var stream = ShaderCompiler.class.getResourceAsStream(path.startsWith("/") ? path : "/" + path)) {
             if (stream == null) {
                 throw new RuntimeException("Shader file not found: " + path);
             }

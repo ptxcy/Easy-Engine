@@ -1,6 +1,6 @@
 package dev.ptxy.engine.shader;
 
-import dev.ptxy.engine.util.AssetPaths;
+import dev.ptxy.engine.objects.assets.AssetPaths;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;
 

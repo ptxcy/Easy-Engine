@@ -1,4 +1,4 @@
-package dev.ptxy.engine.util;
+package dev.ptxy.engine.objects.assets;
 
 import java.nio.file.Path;
 

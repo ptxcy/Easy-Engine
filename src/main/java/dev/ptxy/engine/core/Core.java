@@ -71,7 +71,7 @@ public final class Core {
     private void loop(SceneRenderer sceneRenderer) {
         GL.createCapabilities();
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-        ShaderCompiler.initShader("dev/ptxy/engine/shader/vertex.glsl", "dev/ptxy/engine/shader/fragment.glsl");
+        ShaderCompiler.initShader("shader/vertex.glsl", "shader/fragment.glsl");
 
         while (!glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle())) {
             glEnable(GL_DEPTH_TEST);
