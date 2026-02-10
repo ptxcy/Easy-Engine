@@ -25,17 +25,22 @@ public class PbrTestLauncher implements SceneRenderer {
     }
 
     @Override
-    public void renderScene( ) {
+    public void renderScene() {
         if (windowHandle == 0) windowHandle = GLFW.glfwGetCurrentContext();
         if (!initiated) {
             initiated = true;
+
             SceneNodeRegistry.preloadAssets();
-            SceneNodeRegistry.instantiate("grass_medium_01_mid_a_LOD0","Grass");
+            SceneNodeRegistry.instantiate("grass_medium_01_mid_a_LOD0", "Grass");
+            var groundAsset = dev.ptxy.engine.objects.Quad.create(20f, new org.joml.Vector3f(97/255f , 58/255f, 25/255f));
+            SceneNodeRegistry.loadAssetFromAsset("Ground", groundAsset);
+            SceneNodeRegistry.instantiate("Ground", "GroundNode");
         }
 
-        SceneNodeRegistry.renderAllActive(camera,light);
+        SceneNodeRegistry.renderAllActive(camera, light);
         handleInput();
     }
+
 
     private void handleInput() {
         if (windowHandle == 0) return;

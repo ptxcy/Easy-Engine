@@ -63,6 +63,18 @@ public final class SceneNodeRegistry {
     }
 
     /**
+     * Registriert ein bereits vorhandenes Asset als verfügbaren SceneNode.
+     *
+     * @param name Name für die Node
+     * @param asset Das Asset, das als Node verfügbar sein soll
+     */
+    public static void loadAssetFromAsset(String name, Asset asset) {
+        SceneNode node = new SceneNode(asset);
+        availableNodes.put(name, node);
+        System.out.println("[SceneNodeRegistry] Loaded prototype node from Asset: " + name);
+    }
+
+    /**
      * Lädt alle Assets aus resources/SceneConfig.json
      */
     public static void preloadAssets() {
