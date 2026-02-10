@@ -3,7 +3,7 @@ package dev.ptxy.engine.objects.assets;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import dev.ptxy.engine.GLTF.GLTFLoader;
+import dev.ptxy.engine.gltf.GLTFLoader;
 import dev.ptxy.engine.camera.Camera;
 import dev.ptxy.engine.light.PointLight;
 import dev.ptxy.engine.objects.SceneNode;

@@ -1,4 +1,4 @@
-package dev.ptxy.engine.GLTF;
+package dev.ptxy.engine.gltf;
 
 import dev.ptxy.engine.objects.SceneNode;
 import dev.ptxy.engine.objects.Triangle;
