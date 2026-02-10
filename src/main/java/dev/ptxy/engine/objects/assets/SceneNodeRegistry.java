@@ -78,6 +78,7 @@ public final class SceneNodeRegistry {
      * Lädt alle Assets aus resources/SceneConfig.json
      */
     public static void preloadAssets() {
+        //TODO This needs to be multithreaded to reduce setup times GLFW Context must be set
         try (Reader reader = new InputStreamReader(
                 SceneNodeRegistry.class.getResourceAsStream("/SceneConfig.json"),
                 StandardCharsets.UTF_8
