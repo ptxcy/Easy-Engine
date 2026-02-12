@@ -86,11 +86,14 @@ tasks.register("runEngine", Exec) {
     dependsOn tasks.build
 
     workingDir = layout.buildDirectory.dir("libs").get().asFile
-    commandLine(
-            "java",
-            "-jar",
-            jar.archiveFile.get().asFile.name
-    )
+
+    def cmd = ["java"]
+    if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+        cmd += ["-XstartOnFirstThread"]
+    }
+    cmd += ["-jar", jar.archiveFile.get().asFile.name]
+
+    commandLine(cmd)
 }
 
 jar {
