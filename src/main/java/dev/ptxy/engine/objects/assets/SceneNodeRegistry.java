@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.ptxy.engine.gltf.GLTFLoader;
 import dev.ptxy.engine.camera.Camera;
+import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.light.PointLight;
 import dev.ptxy.engine.objects.SceneNode;
 
@@ -56,7 +57,7 @@ public final class SceneNodeRegistry {
         return activeNodes.containsKey(instanceId);
     }
 
-    public static void renderAllActive(Camera camera, PointLight light) {
+    public static void renderAllActive(Camera camera, DirectionalLight light) {
         for (SceneNode node : activeNodes.values()) {
             node.render(new org.joml.Matrix4f().identity(), camera, light);
         }

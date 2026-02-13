@@ -70,11 +70,14 @@ public final class Core {
 
     private void loop(SceneRenderer sceneRenderer) {
         GL.createCapabilities();
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
         ShaderCompiler.initShader("shader/vertex.glsl", "shader/fragment.glsl");
 
         while (!glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle())) {
-            glEnable(GL_DEPTH_TEST);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             sceneRenderer.renderScene();

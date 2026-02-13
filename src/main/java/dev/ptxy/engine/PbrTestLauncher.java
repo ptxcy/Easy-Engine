@@ -3,6 +3,7 @@ package dev.ptxy.engine;
 import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.core.Core;
 import dev.ptxy.engine.core.SceneRenderer;
+import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.light.PointLight;
 import dev.ptxy.engine.objects.MovementUtility;
 import dev.ptxy.engine.objects.SceneNode;
@@ -14,7 +15,7 @@ import org.lwjgl.glfw.GLFW;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class PbrTestLauncher implements SceneRenderer {
-    private final PointLight light = new PointLight(new Vector3f(0f, 1f, 0f), new Vector3f(5, 5, 5));
+    private final DirectionalLight light = new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(5, 5, 5));
     private final SimpleCamera3D camera = new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 100f);
     private long windowHandle;
     private final float moveStep = 0.05f;

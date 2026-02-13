@@ -5,7 +5,7 @@ in vec3 worldPos;
 in vec3 normal;
 
 uniform vec3 camPos;
-uniform vec3 lightPos;
+uniform vec3 lightDir;
 uniform vec3 lightColor;
 uniform vec3 albedo;
 uniform float metallic;
@@ -33,11 +33,9 @@ void main() {
 
     // View / Light
     vec3 V = normalize(camPos - worldPos);
-    vec3 L = normalize(lightPos - worldPos);
+    vec3 L = normalize(-lightDir);
     vec3 H = normalize(V + L);
-    float distance = length(lightPos - worldPos);
-    float attenuation = 1.0 / (distance * distance);
-    vec3 radiance = lightColor * attenuation;
+    vec3 radiance = lightColor;
 
     // Material
     vec3 baseColor = albedo;

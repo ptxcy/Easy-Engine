@@ -1,6 +1,7 @@
 package dev.ptxy.engine.objects.assets;
 
 import dev.ptxy.engine.camera.Camera;
+import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.light.PointLight;
 import dev.ptxy.engine.objects.Triangle;
 import dev.ptxy.engine.objects.properties.Material;
@@ -98,7 +99,7 @@ public class Asset {
     /**
      * Rendert das Asset mit einem Draw Call.
      */
-    public void render(Matrix4f transform, Camera camera, PointLight light) {
+    public void render(Matrix4f transform, Camera camera, DirectionalLight light) {
         if (vertexCount == 0 || vaoId == -1) return;
         if (ShaderCompiler.shaderProgramId == null) {
             throw new IllegalStateException("Shader not initialized!");
@@ -114,7 +115,7 @@ public class Asset {
 
         // Kamera & Licht
         ShaderUtils.setUniformVec3(shader, "camPos", camera.getPosition());
-        ShaderUtils.setUniformVec3(shader, "lightPos", light.getPosition());
+        ShaderUtils.setUniformVec3(shader, "lightDir", light.getDirection());
         ShaderUtils.setUniformVec3(shader, "lightColor", light.getColor());
 
         // Material
