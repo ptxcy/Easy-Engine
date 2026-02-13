@@ -3,7 +3,7 @@ package dev.ptxy.engine.camera;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class SimpleCamera3D implements Camera {
+public class SimpleCamera3D {
     private final Matrix4f projection;
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Vector3f position = new Vector3f(0, 0, 5);

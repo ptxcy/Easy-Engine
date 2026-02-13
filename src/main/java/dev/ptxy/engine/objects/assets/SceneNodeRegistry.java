@@ -3,10 +3,9 @@ package dev.ptxy.engine.objects.assets;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.gltf.GLTFLoader;
-import dev.ptxy.engine.camera.Camera;
 import dev.ptxy.engine.light.DirectionalLight;
-import dev.ptxy.engine.light.PointLight;
 import dev.ptxy.engine.objects.SceneNode;
 
 import java.io.InputStreamReader;
@@ -57,7 +56,7 @@ public final class SceneNodeRegistry {
         return activeNodes.containsKey(instanceId);
     }
 
-    public static void renderAllActive(Camera camera, DirectionalLight light) {
+    public static void renderAllActive(SimpleCamera3D camera, DirectionalLight light) {
         for (SceneNode node : activeNodes.values()) {
             node.render(new org.joml.Matrix4f().identity(), camera, light);
         }

@@ -1,8 +1,7 @@
 package dev.ptxy.engine.objects;
 
-import dev.ptxy.engine.camera.Camera;
+import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.light.DirectionalLight;
-import dev.ptxy.engine.light.PointLight;
 import dev.ptxy.engine.objects.assets.Asset;
 import org.joml.Matrix4f;
 
@@ -51,7 +50,7 @@ public final class SceneNode {
         return copy;
     }
 
-    public void render(Matrix4f identity, Camera camera, DirectionalLight light) {
+    public void render(Matrix4f identity, SimpleCamera3D camera, DirectionalLight light) {
         asset.render(identity,camera,light);
         children.forEach(node->render(identity,camera,light));
     }
