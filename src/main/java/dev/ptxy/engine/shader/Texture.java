@@ -10,6 +10,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL21C.GL_SRGB_ALPHA;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class Texture {

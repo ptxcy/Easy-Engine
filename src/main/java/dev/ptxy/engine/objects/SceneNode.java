@@ -38,9 +38,6 @@ public final class SceneNode {
         return asset;
     }
 
-    /**
-     * Deep copy für Instanzierung
-     */
     public SceneNode cloneNode() {
         SceneNode copy = new SceneNode(asset);
         copy.setLocalTransform(new Matrix4f(localTransform));
@@ -53,6 +50,11 @@ public final class SceneNode {
     public void render(Matrix4f identity, SimpleCamera3D camera, DirectionalLight light) {
         asset.render(identity,camera,light);
         children.forEach(node->render(identity,camera,light));
+    }
+
+    public void render(Matrix4f identity, SimpleCamera3D camera, DirectionalLight light,String shaderName) {
+        asset.render(identity,camera,light,shaderName);
+        children.forEach(node->render(identity,camera,light,shaderName));
     }
 
 }

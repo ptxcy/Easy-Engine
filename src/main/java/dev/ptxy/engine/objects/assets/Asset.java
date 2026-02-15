@@ -12,13 +12,14 @@ import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Asset {
-
     private final String id;
     private final List<Triangle> triangles;
     private final List<Material> materials;
@@ -56,7 +57,7 @@ public class Asset {
         if (triangles.isEmpty()) return;
 
         vertexCount = triangles.size() * 3;
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(vertexCount * 8);
+        FloatBuffer buffer = BufferUtils.createFloatBuffer(vertexCount * 14);
 
         for (Triangle tri : triangles) {
             for (int i = 0; i < 3; i++) {
@@ -70,6 +71,14 @@ public class Asset {
 
                 buffer.put(tri.uvCoords()[i].x());
                 buffer.put(tri.uvCoords()[i].y());
+
+                buffer.put(tri.tangents()[i].x());
+                buffer.put(tri.tangents()[i].y());
+                buffer.put(tri.tangents()[i].z());
+
+                buffer.put(tri.bitangents()[i].x());
+                buffer.put(tri.bitangents()[i].y());
+                buffer.put(tri.bitangents()[i].z());
             }
         }
         buffer.flip();
@@ -81,32 +90,46 @@ public class Asset {
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
         glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 
-        // VertexAttribs: pos(0), uv(1), normal(2)
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * Float.BYTES, 0);
+        int stride = 14 * Float.BYTES;
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, 0);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, 8 * Float.BYTES, 6 * Float.BYTES);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, stride, 6 * Float.BYTES);
         glEnableVertexAttribArray(1);
 
-        glVertexAttribPointer(2, 3, GL_FLOAT, false, 8 * Float.BYTES, 3 * Float.BYTES);
+        glVertexAttribPointer(2, 3, GL_FLOAT, false, stride, 3 * Float.BYTES);
         glEnableVertexAttribArray(2);
+
+        glVertexAttribPointer(3, 3, GL_FLOAT, false, stride, 8 * Float.BYTES);
+        glEnableVertexAttribArray(3);
+
+        glVertexAttribPointer(4, 3, GL_FLOAT, false, stride, 8 * Float.BYTES);
+        glEnableVertexAttribArray(4);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
 
-    /**
-     * Rendert das Asset mit einem Draw Call.
-     */
     public void render(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light) {
         if (vertexCount == 0 || vaoId == -1) return;
-        if (ShaderCompiler.shaderProgramId == null) {
-            throw new IllegalStateException("Shader not initialized!");
-        }
 
-        int shader = ShaderCompiler.shaderProgramId;
+        int shader = ShaderCompiler.getShader("base");
         glUseProgram(shader);
+        setShaderVars(transform,camera,light,shader);
+        glUseProgram(0);
+    }
 
+    public void render(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, String shaderName) {
+        if (vertexCount == 0 || vaoId == -1) return;
+
+        int shader = ShaderCompiler.getShader(shaderName);
+        glUseProgram(shader);
+        setShaderVars(transform,camera,light,shader);
+        setGrassShaderVars(shaderName,shader);
+        glUseProgram(0);
+    }
+
+    private void setShaderVars(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, Integer shader) {
         // Matrizen
         ShaderUtils.setUniformMat4(shader, "model", transform);
         ShaderUtils.setUniformMat4(shader, "view", camera.getViewMatrix());
@@ -118,24 +141,24 @@ public class Asset {
         ShaderUtils.setUniformVec3(shader, "lightColor", light.getColor());
 
         // Material
-        Material mat = materials.isEmpty() ? new Material() : materials.get(0);
+        Material mat = materials.isEmpty() ? new Material() : materials.getFirst();
         ShaderUtils.setUniformVec3(shader, "albedo", mat.getAlbedo());
         ShaderUtils.setUniformFloat(shader, "metallic", mat.getMetallic());
         ShaderUtils.setUniformFloat(shader, "roughness", mat.getRoughness());
         ShaderUtils.setUniformFloat(shader, "ao", mat.getAo());
 
         // Texturen
-        boolean useBase = baseColors.stream().anyMatch(t -> t != null);
-        boolean useMR = metallicRoughness.stream().anyMatch(t -> t != null);
-        boolean useNormal = normalMaps.stream().anyMatch(t -> t != null);
+        boolean useBase = baseColors.stream().anyMatch(Objects::nonNull);
+        boolean useMR = metallicRoughness.stream().anyMatch(Objects::nonNull);
+        boolean useNormal = normalMaps.stream().anyMatch(Objects::nonNull);
 
         ShaderUtils.setUniformInt(shader, "useBaseColor", useBase ? 1 : 0);
         ShaderUtils.setUniformInt(shader, "useMetallicRoughness", useMR ? 1 : 0);
         ShaderUtils.setUniformInt(shader, "useNormalMap", useNormal ? 1 : 0);
 
-        if (useBase) baseColors.get(0).bind(0);
-        if (useMR) metallicRoughness.get(0).bind(1);
-        if (useNormal) normalMaps.get(0).bind(2);
+        if (useBase) baseColors.getFirst().bind(0);
+        if (useMR) metallicRoughness.getFirst().bind(1);
+        if (useNormal) normalMaps.getFirst().bind(2);
 
         ShaderUtils.setUniformInt(shader, "baseColorTexture", 0);
         ShaderUtils.setUniformInt(shader, "metallicRoughnessTexture", 1);
@@ -146,10 +169,33 @@ public class Asset {
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
         glBindVertexArray(0);
 
-        if (useBase) baseColors.get(0).unbind();
-        if (useMR) metallicRoughness.get(0).unbind();
-        if (useNormal) normalMaps.get(0).unbind();
+        if (useBase) baseColors.getFirst().unbind();
+        if (useMR) metallicRoughness.getFirst().unbind();
+        if (useNormal) normalMaps.getFirst().unbind();
+    }
 
-        glUseProgram(0);
+    long gameStartTime = System.currentTimeMillis();
+    public void setGrassShaderVars(String shaderName, Integer shaderId) {
+        if(!"grass".equals(shaderName)) return;
+        long currentTime = System.currentTimeMillis();
+        float elapsedTime = (currentTime - gameStartTime) / 1000f;
+        ShaderUtils.setUniformFloat(shaderId, "time", elapsedTime);
+        ShaderUtils.setUniformFloat(shaderId, "windStrength", 0.1f);
+    }
+
+    public List<Material> getMaterials() {
+        return materials;
+    }
+
+    public List<Texture> getBaseColors() {
+        return baseColors;
+    }
+
+    public List<Texture> getMetallicRoughness() {
+        return metallicRoughness;
+    }
+
+    public List<Texture> getNormalMaps() {
+        return normalMaps;
     }
 }

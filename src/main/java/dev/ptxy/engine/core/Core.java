@@ -72,10 +72,12 @@ public final class Core {
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-        ShaderCompiler.initShader("shader/vertex.glsl", "shader/fragment.glsl");
+        ShaderCompiler.preloadConfiguredShaders("shader/base/vertex.glsl", "shader/base/fragment.glsl");
 
         while (!glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle())) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

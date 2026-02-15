@@ -31,7 +31,8 @@ public final class GLTFLoader {
                 aiProcess_Triangulate |
                         aiProcess_JoinIdenticalVertices |
                         aiProcess_FlipUVs |
-                        aiProcess_GenNormals
+                        aiProcess_GenNormals |
+                        aiProcess_CalcTangentSpace
         );
 
         if (scene == null) {
@@ -96,6 +97,8 @@ public final class GLTFLoader {
         AIVector3D.Buffer verts = mesh.mVertices();
         AIVector3D.Buffer norms = mesh.mNormals();
         AIVector3D.Buffer tex = mesh.mTextureCoords(0);
+        AIVector3D.Buffer tangents = mesh.mTangents();
+        AIVector3D.Buffer bitangents = mesh.mBitangents();
         AIFace.Buffer faces = mesh.mFaces();
 
         for (int f = 0; f < faces.capacity(); f++) {
@@ -106,13 +109,13 @@ public final class GLTFLoader {
             int i1 = face.mIndices().get(1);
             int i2 = face.mIndices().get(2);
 
-            Vector3f[] v = {
+            Vector3f[] vertexs = {
                     new Vector3f(verts.get(i0).x(), verts.get(i0).y(), verts.get(i0).z()),
                     new Vector3f(verts.get(i1).x(), verts.get(i1).y(), verts.get(i1).z()),
                     new Vector3f(verts.get(i2).x(), verts.get(i2).y(), verts.get(i2).z())
             };
 
-            Vector3f[] n = {
+            Vector3f[] normals = {
                     new Vector3f(norms.get(i0).x(), norms.get(i0).y(), norms.get(i0).z()),
                     new Vector3f(norms.get(i1).x(), norms.get(i1).y(), norms.get(i1).z()),
                     new Vector3f(norms.get(i2).x(), norms.get(i2).y(), norms.get(i2).z())
@@ -127,7 +130,28 @@ public final class GLTFLoader {
                 uv[0] = uv[1] = uv[2] = new Vector2f();
             }
 
-            tris.add(new Triangle(v, n, uv));
+            Vector3f[] tang = new Vector3f[3];
+            Vector3f[] bitang = new Vector3f[3];
+            for (int i = 0; i < 3; i++) {
+                if (tangents != null) {
+                    tang[i] = new Vector3f(tangents.get(face.mIndices().get(i)).x(),
+                            tangents.get(face.mIndices().get(i)).y(),
+                            tangents.get(face.mIndices().get(i)).z());
+                } else {
+                    tang[i] = new Vector3f(1,0,0);
+                }
+
+                if(bitangents != null){
+                    bitang[i] = new Vector3f(bitangents.get(face.mIndices().get(i)).x(),
+                            bitangents.get(face.mIndices().get(i)).y(),
+                            bitangents.get(face.mIndices().get(i)).z());
+                }else{
+                    bitang[i] = new Vector3f();
+                    bitang[i].cross(normals[i], tang[i]).normalize();
+                }
+            }
+
+            tris.add(new Triangle(vertexs, normals, uv, tang, bitang));
         }
 
         return tris;

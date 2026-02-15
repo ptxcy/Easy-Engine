@@ -45,8 +45,8 @@ public final class GameWindow {
             glfwDestroyWindow(GameWindow.getActiveWindow().getWindowHandle());
         }
 
-        int width = Integer.parseInt(System.getProperty("WIDTH", "1000"));
-        int height = Integer.parseInt(System.getProperty("WIDTH", "1000"));
+        int width = Integer.parseInt(System.getProperty("WIDTH", "1080"));
+        int height = Integer.parseInt(System.getProperty("WIDTH", "1920"));
         String title = System.getProperty("WINDOW_TITLE", "Game");
         long monitor = Long.parseLong(System.getProperty("WINDOW_MONITOR", "0"));
         long share = Long.parseLong(System.getProperty("WINDOW_SHARE", "0"));
