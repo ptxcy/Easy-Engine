@@ -46,7 +46,7 @@ public class PbrTestLauncher implements SceneRenderer {
     private void instanceObjects(){
         SceneNodeRegistry.preloadAssets();
         grass = SceneNodeRegistry.instantiate("flat_grass", "Grass");
-        ground = Ground.createSimpleGround();
+        ground = Ground.createGround(10,10,5);
     }
 
     private void generateGrassTransforms() {
@@ -81,7 +81,7 @@ public class PbrTestLauncher implements SceneRenderer {
 
     private void renderObjects(){
         // Boden rendern
-        ground.render(new Matrix4f().identity(), camera, light);
+        ground.render(new Matrix4f().identity(), camera, light, "grass");
 
         // Gras rendern
         for (Matrix4f transform : grassTransforms) {

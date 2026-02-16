@@ -1,7 +1,7 @@
 {
   "preloadAssets": [
     "pixel_grass.gltf",
-    "brown_mud_leaves_01_4k.gltf"
+    "grass_ground.gltf"
   ],
   "preloadShader": [
     "shader/base",

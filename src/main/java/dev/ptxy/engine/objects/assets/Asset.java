@@ -180,7 +180,7 @@ public class Asset {
         long currentTime = System.currentTimeMillis();
         float elapsedTime = (currentTime - gameStartTime) / 1000f;
         ShaderUtils.setUniformFloat(shaderId, "time", elapsedTime);
-        ShaderUtils.setUniformFloat(shaderId, "windStrength", 0.1f);
+        ShaderUtils.setUniformFloat(shaderId, "windStrength", 0.05f);
     }
 
     public List<Material> getMaterials() {

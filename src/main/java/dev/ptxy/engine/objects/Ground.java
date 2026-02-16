@@ -24,40 +24,45 @@ public class Ground {
         groundNode.render(transform,camera,light);
     }
 
-    public static Ground createSimpleGround() {
+    public void render(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, String shaderName){
+        groundNode.render(transform,camera,light,shaderName);
+    }
+
+    public static Ground createGround(float width, float height, int divider) {
         String id = "Ground";
 
         List<Triangle> triangles = new ArrayList<>();
 
         // GLTF reference
-        SceneNode groundReferenceSphere = SceneNodeRegistry.getAvailable("sphere_gltf");
-        Asset referenceAsset = groundReferenceSphere.getAsset();
+        SceneNode groundReference = SceneNodeRegistry.getAvailable("grass_ground");
+        Asset referenceAsset = groundReference.getAsset();
         List<Material> materials = referenceAsset.getMaterials();
         List<Texture> baseColors = referenceAsset.getBaseColors();
         List<Texture> metallicRoughness = referenceAsset.getMetallicRoughness();
         List<Texture> normalMaps = referenceAsset.getNormalMaps();
 
-        int size = 10;
-        float tileFactor = 1.0f;
+        // Schrittgröße pro Rasterfeld
+        float stepX = width / divider;
+        float stepZ = height / divider;
 
-        for (int z = 0; z < size; z++) {
-            for (int x = 0; x < size; x++) {
+        // UV-Faktor pro Rasterfeld
+        float uvStep = 1.0f / divider;
 
-                // Positionen
-                Vector3f v00 = new Vector3f(x,     0, z);
-                Vector3f v10 = new Vector3f(x + 1, 0, z);
-                Vector3f v01 = new Vector3f(x,     0, z + 1);
-                Vector3f v11 = new Vector3f(x + 1, 0, z + 1);
+        for (int z = 0; z < divider; z++) {
+            for (int x = 0; x < divider; x++) {
+
+                // Eckpunkte des Feldes
+                Vector3f v00 = new Vector3f(x * stepX, 0, z * stepZ);
+                Vector3f v10 = new Vector3f((x + 1) * stepX, 0, z * stepZ);
+                Vector3f v01 = new Vector3f(x * stepX, 0, (z + 1) * stepZ);
+                Vector3f v11 = new Vector3f((x + 1) * stepX, 0, (z + 1) * stepZ);
 
                 // UVs
-                Vector2f uv00 = new Vector2f((x / (float) size) * tileFactor,
-                        (z / (float) size) * tileFactor);
-                Vector2f uv10 = new Vector2f(((x + 1) / (float) size) * tileFactor,
-                        (z / (float) size) * tileFactor);
-                Vector2f uv01 = new Vector2f((x / (float) size) * tileFactor,
-                        ((z + 1) / (float) size) * tileFactor);
-                Vector2f uv11 = new Vector2f(((x + 1) / (float) size) * tileFactor,
-                        ((z + 1) / (float) size) * tileFactor);
+                Vector2f uv00 = new Vector2f(0, 0);
+                Vector2f uv10 = new Vector2f(1, 0);
+                Vector2f uv01 = new Vector2f(0, 1);
+                Vector2f uv11 = new Vector2f(1, 1);
+
                 Vector3f normal = new Vector3f(0, 1, 0);
 
                 triangles.add(createTileTriangle(v00, v01, v10, uv00, uv01, uv10, normal));
