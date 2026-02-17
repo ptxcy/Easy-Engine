@@ -58,32 +58,20 @@ public class PbrTestLauncher implements SceneRenderer {
             float y = 0.3f;
 
             Matrix4f transform = new Matrix4f().identity();
-
             transform.scale(0.5f,0.5f,0.5f);
-
-            // Zufällige Rotation um Y für Variation
             float rotY = (float) (Math.random() * Math.PI * 2);
             transform.rotateY(rotY);
-
-            // Grass aufrecht stellen (Rotation um X)
-            transform.rotateX((float) (Math.PI / 2)); // -90° um X
-
+            transform.rotateX((float) (Math.PI / 2));
             float maxDeg = 10f;
             float rotX = (float)((Math.random() * 2.0 - 1.0) * Math.toRadians(maxDeg));
             transform.rotateX(rotX);
-
-            // Position setzen **zuletzt**
             transform = MovementUtility.setPosition(transform, x, y, z);
-
             grassTransforms.add(transform);
         }
     }
 
     private void renderObjects(){
-        // Boden rendern
         ground.render(new Matrix4f().identity(), camera, light, "grass");
-
-        // Gras rendern
         for (Matrix4f transform : grassTransforms) {
             grass.render(transform, camera, light, "grass");
         }
