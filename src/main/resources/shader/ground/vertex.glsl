@@ -15,7 +15,7 @@ out vec3 normal;
 void main() {
     fragTexCoords = aTexCoords;
     normal = normalize(mat3(transpose(inverse(model))) * aNormal);
-    vec4 wp = model * vec4(pos, 1.0);
+    vec4 wp = model * vec4(aPos, 1.0);
     worldPos = wp.xyz;
     gl_Position = projection * view * wp;
 }

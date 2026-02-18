@@ -18,26 +18,36 @@ import java.util.Random;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL30.*;
+enum AssetType {
+    BASE, GRASS, GROUND
+}
+
 
 public class Asset {
     private final String id;
+    private final AssetType type;
     private final List<Triangle> triangles;
     private final List<Material> materials;
     private final List<Texture> baseColors;
     private final List<Texture> metallicRoughness;
     private final List<Texture> normalMaps;
 
+    //Optional parameters
+    private Texture noiseTexture;
+
     private int vaoId = -1;
     private int vboId = -1;
     private int vertexCount = 0;
 
     public Asset(String id,
+                 AssetType type,
                  List<Triangle> triangles,
                  List<Material> materials,
                  List<Texture> baseColors,
                  List<Texture> metallicRoughness,
                  List<Texture> normalMaps) {
         this.id = id;
+        this.type = type;
         this.triangles = triangles;
         this.materials = materials;
         this.baseColors = baseColors;
@@ -116,17 +126,20 @@ public class Asset {
         int shader = ShaderCompiler.getShader("base");
         glUseProgram(shader);
         setShaderVars(transform,camera,light,shader);
+        switch (type) {
+            case GRASS -> setGrassShaderVars(shader);
+            case GROUND -> setGroundShaderVars(shader);
+            default -> {
+                //Nothing i guess
+            }
+        }
+
         glUseProgram(0);
     }
 
-    public void render(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, String shaderName) {
-        if (vertexCount == 0 || vaoId == -1) return;
-
-        int shader = ShaderCompiler.getShader(shaderName);
-        glUseProgram(shader);
-        setShaderVars(transform,camera,light,shader);
-        setGrassShaderVars(shaderName,shader);
-        glUseProgram(0);
+    private void setGroundShaderVars(Integer shader) {
+        if(noiseTexture == null) throw new RuntimeException("Noise texture not set but is required for: " + type.name() + " shader");
+        noiseTexture.bind(3);
     }
 
     private void setShaderVars(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, Integer shader) {
@@ -175,8 +188,7 @@ public class Asset {
     }
 
     long gameStartTime = System.currentTimeMillis();
-    public void setGrassShaderVars(String shaderName, Integer shaderId) {
-        if(!"grass".equals(shaderName)) return;
+    public void setGrassShaderVars(Integer shaderId) {
         long currentTime = System.currentTimeMillis();
         float elapsedTime = (currentTime - gameStartTime) / 1000f;
         ShaderUtils.setUniformFloat(shaderId, "time", elapsedTime);
@@ -197,5 +209,17 @@ public class Asset {
 
     public List<Texture> getNormalMaps() {
         return normalMaps;
+    }
+
+    public void setNoiseTexture(Texture noiseTexture) {
+        this.noiseTexture = noiseTexture;
+    }
+
+    public Texture getNoiseTexture() {
+        return noiseTexture;
+    }
+
+    public AssetType getType() {
+        return type;
     }
 }

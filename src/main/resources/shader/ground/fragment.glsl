@@ -13,7 +13,7 @@ uniform sampler2D diffuseTexOne;
 uniform sampler2D diffuseTexTwo;
 uniform sampler2D diffuseTexThree;
 
-uniform sampler2D chunkNoiseTexture;
+uniform sampler2D noiseTex;
 
 uniform float noiseScale;
 uniform float mixThreshold;
@@ -32,7 +32,7 @@ void main()
 
     // --- Noise Sampling (World Space XZ) ---
     vec2 noiseUV = worldPos.xz * noiseScale;
-    float noiseValue = texture(chunkNoiseTexture, noiseUV).r;
+    float noiseValue = texture(noiseTex, noiseUV).r;
     float t = smoothstep(mixThreshold - 0.1,
     mixThreshold + 0.1,
     noiseValue);

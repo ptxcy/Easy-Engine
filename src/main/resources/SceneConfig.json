@@ -1,10 +1,10 @@
 {
   "preloadAssets": [
     "pixel_grass.gltf",
-    "grass_ground.gltf"
+    "grass_ground_ref.gltf"
   ],
   "preloadShader": [
-    "shader/base",
-    "shader/grass"
+    "shader/grass",
+    "shader/ground"
   ]
 }

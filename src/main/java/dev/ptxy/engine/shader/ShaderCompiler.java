@@ -38,6 +38,7 @@ public class ShaderCompiler {
 
             for (int i = 0; i < arr.size(); i++) {
                 String path = arr.get(i).getAsString();
+                System.out.println("Preloading Shader: " + path);
                 Integer shaderId = compile(path + "/vertex.glsl",path + "/fragment.glsl");
                 String[] pathParts = path.splitWithDelimiters("/", 2);
                 if(pathParts.length <= 1) throw new ConfigurationException("Configured Shader path in Scene.config must at least have 2 dirs shader/name");
