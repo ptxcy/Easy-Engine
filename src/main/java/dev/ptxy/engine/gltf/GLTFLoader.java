@@ -3,7 +3,9 @@ package dev.ptxy.engine.gltf;
 import dev.ptxy.engine.objects.SceneNode;
 import dev.ptxy.engine.objects.Triangle;
 import dev.ptxy.engine.objects.assets.Asset;
+import dev.ptxy.engine.objects.assets.AssetBuilder;
 import dev.ptxy.engine.objects.assets.AssetPaths;
+import dev.ptxy.engine.objects.assets.AssetType;
 import dev.ptxy.engine.objects.properties.Material;
 import dev.ptxy.engine.shader.Texture;
 import org.joml.Matrix4f;
@@ -82,14 +84,15 @@ public final class GLTFLoader {
             normalMaps.add(loadTexture(aiMat, aiTextureType_NORMALS));
         }
 
-        return new Asset(
-                node.mName().dataString(),
-                triangles,
-                materials,
-                baseColors,
-                metallicRoughness,
-                normalMaps
-        );
+        return new AssetBuilder()
+                .startBuildingAssetOfType(AssetType.BASE)
+                .setId(node.mName().dataString())
+                .setTriangleMesh(triangles)
+                .setMaterials(materials)
+                .setBaseColors(baseColors)
+                .setMetallicRoughness(metallicRoughness)
+                .setNormalMaps(normalMaps)
+                .build();
     }
 
     private static List<Triangle> loadTriangles(AIMesh mesh) {

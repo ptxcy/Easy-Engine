@@ -13,24 +13,19 @@ import org.lwjgl.BufferUtils;
 import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL30.*;
-enum AssetType {
-    BASE, GRASS, GROUND
-}
-
 
 public class Asset {
-    private final String id;
-    private final AssetType type;
-    private final List<Triangle> triangles;
-    private final List<Material> materials;
-    private final List<Texture> baseColors;
-    private final List<Texture> metallicRoughness;
-    private final List<Texture> normalMaps;
+    private String id;
+    private AssetType type;
+    private List<Triangle> triangles;
+    private List<Material> materials;
+    private List<Texture> baseColors;
+    private List<Texture> metallicRoughness;
+    private List<Texture> normalMaps;
 
     //Optional parameters
     private Texture noiseTexture;
@@ -39,31 +34,13 @@ public class Asset {
     private int vboId = -1;
     private int vertexCount = 0;
 
-    public Asset(String id,
-                 AssetType type,
-                 List<Triangle> triangles,
-                 List<Material> materials,
-                 List<Texture> baseColors,
-                 List<Texture> metallicRoughness,
-                 List<Texture> normalMaps) {
-        this.id = id;
-        this.type = type;
-        this.triangles = triangles;
-        this.materials = materials;
-        this.baseColors = baseColors;
-        this.metallicRoughness = metallicRoughness;
-        this.normalMaps = normalMaps;
-        setupMesh();
-    }
+    public Asset() {}
 
     public String getId() {
         return id;
     }
 
-    /**
-     * Erstellt VAO/VBO aus den Triangles. Muss einmal nach Asset-Load aufgerufen werden.
-     */
-    public void setupMesh() {
+    public void prepareAssetForRendering() {
         if (triangles.isEmpty()) return;
 
         vertexCount = triangles.size() * 3;
@@ -139,7 +116,14 @@ public class Asset {
 
     private void setGroundShaderVars(Integer shader) {
         if(noiseTexture == null) throw new RuntimeException("Noise texture not set but is required for: " + type.name() + " shader");
+        baseColors.getFirst().bind(0);
+        baseColors.get(1).bind(1);
+        baseColors.get(2).bind(2);
         noiseTexture.bind(3);
+
+        ShaderUtils.setUniformFloat(shader, "noiseScale", 1f);
+        ShaderUtils.setUniformFloat(shader, "mixThreshold", 0.1f);
+        ShaderUtils.setUniformFloat(shader, "mixStrength", 0.5f);
     }
 
     private void setShaderVars(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, Integer shader) {
@@ -195,31 +179,63 @@ public class Asset {
         ShaderUtils.setUniformFloat(shaderId, "windStrength", 0.05f);
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public AssetType getType() {
+        return type;
+    }
+
+    public void setType(AssetType type) {
+        this.type = type;
+    }
+
+    public List<Triangle> getTriangles() {
+        return triangles;
+    }
+
+    public void setTriangles(List<Triangle> triangles) {
+        this.triangles = triangles;
+    }
+
     public List<Material> getMaterials() {
         return materials;
+    }
+
+    public void setMaterials(List<Material> materials) {
+        this.materials = materials;
     }
 
     public List<Texture> getBaseColors() {
         return baseColors;
     }
 
+    public void setBaseColors(List<Texture> baseColors) {
+        this.baseColors = baseColors;
+    }
+
     public List<Texture> getMetallicRoughness() {
         return metallicRoughness;
+    }
+
+    public void setMetallicRoughness(List<Texture> metallicRoughness) {
+        this.metallicRoughness = metallicRoughness;
     }
 
     public List<Texture> getNormalMaps() {
         return normalMaps;
     }
 
-    public void setNoiseTexture(Texture noiseTexture) {
-        this.noiseTexture = noiseTexture;
+    public void setNormalMaps(List<Texture> normalMaps) {
+        this.normalMaps = normalMaps;
     }
 
     public Texture getNoiseTexture() {
         return noiseTexture;
     }
 
-    public AssetType getType() {
-        return type;
+    public void setNoiseTexture(Texture noiseTexture) {
+        this.noiseTexture = noiseTexture;
     }
 }

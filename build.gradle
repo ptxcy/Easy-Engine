@@ -67,7 +67,8 @@ dependencies {
     implementation "org.lwjgl:lwjgl-stb::$lwjglNatives"
     if (lwjglNatives == "natives-macos-arm64") implementation "org.lwjgl:lwjgl-vulkan::$lwjglNatives"
     implementation "org.joml:joml:${jomlVersion}"
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation("de.articdive:jnoise-pipeline:4.1.0")
 }
 
 tasks.register("copyAssets", Copy) {

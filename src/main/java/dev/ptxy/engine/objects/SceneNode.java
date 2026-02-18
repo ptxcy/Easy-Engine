@@ -51,10 +51,4 @@ public final class SceneNode {
         asset.render(identity,camera,light);
         children.forEach(node->render(identity,camera,light));
     }
-
-    public void render(Matrix4f identity, SimpleCamera3D camera, DirectionalLight light,String shaderName) {
-        asset.render(identity,camera,light,shaderName);
-        children.forEach(node->render(identity,camera,light,shaderName));
-    }
-
 }
