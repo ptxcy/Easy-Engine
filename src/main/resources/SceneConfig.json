@@ -8,8 +8,8 @@
     "shader/ground"
   ],
   "groundConfig": {
-    "noiseScale": 64.0,
-    "sharpness": 0.5,
+    "noiseScale": 256.0,
+    "sharpness": 0.2,
     "mixStrength": 0.2,
     "size": 512.0,
     "resolution": 1000

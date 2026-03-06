@@ -42,7 +42,7 @@ public class PbrTestLauncher implements SceneRenderer {
         SceneNodeRegistry.preloadAssets();
         grass = SceneNodeRegistry.instantiate("flat_grass", "Grass");
         grass.getAsset().setType(AssetType.GRASS);
-        ground = MapLoader.generateGroundForMap(0);
+        ground = MapLoader.generateMap(0);
     }
 
     private void generateGrassTransforms() {
