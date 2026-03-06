@@ -27,21 +27,26 @@ void main()
     vec2 uv = worldPos.xz / terrainSize;
 
     float noise = clamp(texture(noiseTex, uv).r, 0.0, 1.0);
-    vec3 colorA = texture(diffuseTexOne, uv).rgb;
-    vec3 colorB = texture(diffuseTexTwo, uv).rgb;
+    vec3 colorA = texture(diffuseTexOne,   uv).rgb;
+    vec3 colorB = texture(diffuseTexTwo,   uv).rgb;
     vec3 colorC = texture(diffuseTexThree, uv).rgb;
 
-    vec3 base;
+    // Smoothstep blending
+    float centerAB  = 0.33;
+    float centerBC  = 0.66;
+    float halfWidth = 0.5 / sharpness;
 
-    if (noise < 0.5) {
-        float t = clamp((noise - 0.25) * sharpness + 0.5, 0.0, 1.0);
-        base = mix(colorA, colorB, t);
-    } else {
-        float t = clamp((noise - 0.75) * sharpness + 0.5, 0.0, 1.0);
-        base = mix(colorB, colorC, t);
-    }
+    float tAB = smoothstep(centerAB - halfWidth, centerAB + halfWidth, noise);
+    float tBC = smoothstep(centerBC - halfWidth, centerBC + halfWidth, noise);
 
-    vec3 lighting = base * (NdotL * lightColor + 0.3 * ao);
+    vec3 ab  = mix(colorA, colorB, tAB);
+    vec3 base = mix(ab,    colorC, tBC);
+
+    // Lighting
+    float ambient = 0.08 * ao;
+    vec3 lighting = base * (NdotL * lightColor + ambient);
+
+    // Gamma correction
     lighting = pow(lighting, vec3(1.0 / 2.2));
     resultColor = vec4(lighting, 1.0);
 }

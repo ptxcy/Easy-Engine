@@ -9,7 +9,7 @@
   ],
   "groundConfig": {
     "noiseScale": 64.0,
-    "sharpness": 1.8,
+    "sharpness": 0.5,
     "mixStrength": 0.2,
     "size": 512.0,
     "resolution": 1000

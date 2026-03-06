@@ -19,7 +19,7 @@ import java.util.List;
 public class PbrTestLauncher implements SceneRenderer {
     private boolean initiated = false;
     private final DirectionalLight light = new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
-    private final SimpleCamera3D camera = new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 100f);
+    private final SimpleCamera3D camera = new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 10000f);
     private CameraMovement cameraMovement;
     private SceneNode grass;
     private SceneNode ground;
