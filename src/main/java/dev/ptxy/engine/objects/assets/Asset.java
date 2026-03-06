@@ -1,6 +1,7 @@
 package dev.ptxy.engine.objects.assets;
 
 import dev.ptxy.engine.camera.SimpleCamera3D;
+import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.objects.Triangle;
 import dev.ptxy.engine.objects.properties.Material;
@@ -58,14 +59,6 @@ public class Asset {
 
                 buffer.put(tri.uvCoords()[i].x());
                 buffer.put(tri.uvCoords()[i].y());
-
-                buffer.put(tri.tangents()[i].x());
-                buffer.put(tri.tangents()[i].y());
-                buffer.put(tri.tangents()[i].z());
-
-                buffer.put(tri.bitangents()[i].x());
-                buffer.put(tri.bitangents()[i].y());
-                buffer.put(tri.bitangents()[i].z());
             }
         }
         buffer.flip();
@@ -77,7 +70,7 @@ public class Asset {
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
         glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 
-        int stride = 14 * Float.BYTES;
+        int stride = 8 * Float.BYTES;
         glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, 0);
         glEnableVertexAttribArray(0);
 
@@ -87,12 +80,6 @@ public class Asset {
         glVertexAttribPointer(2, 3, GL_FLOAT, false, stride, 3 * Float.BYTES);
         glEnableVertexAttribArray(2);
 
-        glVertexAttribPointer(3, 3, GL_FLOAT, false, stride, 8 * Float.BYTES);
-        glEnableVertexAttribArray(3);
-
-        glVertexAttribPointer(4, 3, GL_FLOAT, false, stride, 8 * Float.BYTES);
-        glEnableVertexAttribArray(4);
-
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -100,7 +87,7 @@ public class Asset {
     public void render(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light) {
         if (vertexCount == 0 || vaoId == -1) return;
 
-        int shader = ShaderCompiler.getShader("base");
+        int shader = ShaderCompiler.getShader(type.name().toLowerCase());
         glUseProgram(shader);
         setShaderVars(transform,camera,light,shader);
         switch (type) {
@@ -116,14 +103,20 @@ public class Asset {
 
     private void setGroundShaderVars(Integer shader) {
         if(noiseTexture == null) throw new RuntimeException("Noise texture not set but is required for: " + type.name() + " shader");
+        if(baseColors.size() < 3) throw new RuntimeException("Basecolor List of Ground Texture is to small: " + baseColors.size());
+        ShaderUtils.setUniformInt(shader, "diffuseTexOne", 0);
+        ShaderUtils.setUniformInt(shader, "diffuseTexTwo", 1);
+        ShaderUtils.setUniformInt(shader, "diffuseTexThree", 2);
+        ShaderUtils.setUniformInt(shader, "noiseTex", 3);
+
         baseColors.getFirst().bind(0);
         baseColors.get(1).bind(1);
         baseColors.get(2).bind(2);
         noiseTexture.bind(3);
 
-        ShaderUtils.setUniformFloat(shader, "noiseScale", 1f);
-        ShaderUtils.setUniformFloat(shader, "mixThreshold", 0.1f);
-        ShaderUtils.setUniformFloat(shader, "mixStrength", 0.5f);
+        ShaderUtils.setUniformFloat(shader, "mixStrength", Config.getConfigJson().getAsJsonObject("groundConfig").get("mixStrength").getAsFloat());
+        ShaderUtils.setUniformFloat(shader, "terrainSize", Config.getConfigJson().getAsJsonObject("groundConfig").get("size").getAsInt());
+        ShaderUtils.setUniformFloat(shader, "sharpness", Config.getConfigJson().getAsJsonObject("groundConfig").get("sharpness").getAsFloat());
     }
 
     private void setShaderVars(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, Integer shader) {

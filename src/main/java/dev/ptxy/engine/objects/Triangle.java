@@ -6,9 +6,7 @@ import org.joml.Vector3f;
 public record Triangle(
         Vector3f[] formData,
         Vector3f[] normals,
-        Vector2f[] uvCoords,
-        Vector3f[] tangents,
-        Vector3f[] bitangents
+        Vector2f[] uvCoords
 ) {
     public Triangle {
         if (formData == null || formData.length != 3)

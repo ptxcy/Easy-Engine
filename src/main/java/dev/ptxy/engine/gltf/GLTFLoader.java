@@ -154,7 +154,7 @@ public final class GLTFLoader {
                 }
             }
 
-            tris.add(new Triangle(vertexs, normals, uv, tang, bitang));
+            tris.add(new Triangle(vertexs, normals, uv));
         }
 
         return tris;

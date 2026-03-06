@@ -6,55 +6,53 @@ in vec3 normal;
 
 uniform vec3 lightDir;
 uniform vec3 lightColor;
-uniform vec3 albedo;
 uniform float ao;
 
 uniform sampler2D diffuseTexOne;
 uniform sampler2D diffuseTexTwo;
 uniform sampler2D diffuseTexThree;
-
 uniform sampler2D noiseTex;
 
-uniform float noiseScale;
-uniform float mixThreshold;
 uniform float mixStrength;
+uniform float terrainSize;
+uniform float sharpness;
 
 out vec4 resultColor;
-
+///*
 void main()
 {
-    // --- Normal ---
     vec3 N = normalize(normal);
-
-    // --- Licht ---
     vec3 L = normalize(-lightDir);
     float NdotL = max(dot(N, L), 0.0);
+    vec2 uv = worldPos.xz / terrainSize;
 
-    // --- Noise Sampling (World Space XZ) ---
-    vec2 noiseUV = worldPos.xz * noiseScale;
-    float noiseValue = texture(noiseTex, noiseUV).r;
-    float t = smoothstep(mixThreshold - 0.1,
-    mixThreshold + 0.1,
-    noiseValue);
+    float noise = clamp(texture(noiseTex, uv).r, 0.0, 1.0);
+    vec3 colorA = texture(diffuseTexOne, uv).rgb;
+    vec3 colorB = texture(diffuseTexTwo, uv).rgb;
+    vec3 colorC = texture(diffuseTexThree, uv).rgb;
 
-    // --- Basis Texturen ---
-    vec3 colorA = texture(diffuseTexOne,   fragTexCoords).rgb;
-    vec3 colorB = texture(diffuseTexTwo,   fragTexCoords).rgb;
-    vec3 colorC = texture(diffuseTexThree, fragTexCoords).rgb;
+    vec3 base;
 
-    // --- Mix 1 (A + B) ---
-    vec3 mixAB = mix(colorA, colorB, t * mixStrength);
+    if (noise < 0.5) {
+        float t = clamp((noise - 0.25) * sharpness + 0.5, 0.0, 1.0);
+        base = mix(colorA, colorB, t);
+    } else {
+        float t = clamp((noise - 0.75) * sharpness + 0.5, 0.0, 1.0);
+        base = mix(colorB, colorC, t);
+    }
 
-    // --- Mix 2 ((A+B) + C) ---
-    vec3 finalBase = mix(mixAB, colorC, t);
-
-    // --- Lighting ---
-    vec3 diffuse = finalBase * NdotL * lightColor;
-    vec3 ambient = finalBase * 0.3 * ao;
-    vec3 color = ambient + diffuse;
-
-    // Gamma
-    color = pow(color, vec3(1.0/2.2));
-
-    resultColor = vec4(color, 1.0);
+    vec3 lighting = base * (NdotL * lightColor + 0.3 * ao);
+    lighting = pow(lighting, vec3(1.0 / 2.2));
+    resultColor = vec4(lighting, 1.0);
 }
+//*/
+
+/*
+void main()
+{
+    //Display Noise Debug
+    vec2 uv = fragTexCoords;
+    float noise = texture(noiseTex, uv).r;
+    resultColor = vec4(vec3(noise), 1.0);
+}
+*/

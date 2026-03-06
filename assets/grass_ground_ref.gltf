@@ -145,7 +145,7 @@
 		{
 			"mimeType":"image/png",
 			"name":"grass_variant_three",
-			"uri":"gtextures/rass_variant_three.png"
+			"uri":"textures/grass_variant_three.png"
 		}
 	],
 	"accessors":[

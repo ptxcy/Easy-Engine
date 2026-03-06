@@ -4,10 +4,10 @@ import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.core.Core;
 import dev.ptxy.engine.core.SceneRenderer;
 import dev.ptxy.engine.light.DirectionalLight;
-import dev.ptxy.engine.light.PointLight;
-import dev.ptxy.engine.objects.Ground;
+import dev.ptxy.engine.map.MapLoader;
 import dev.ptxy.engine.objects.MovementUtility;
 import dev.ptxy.engine.objects.SceneNode;
+import dev.ptxy.engine.objects.assets.AssetType;
 import dev.ptxy.engine.objects.assets.SceneNodeRegistry;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -16,18 +16,13 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.lwjgl.glfw.GLFW.*;
-
 public class PbrTestLauncher implements SceneRenderer {
     private boolean initiated = false;
-
     private final DirectionalLight light = new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
     private final SimpleCamera3D camera = new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 100f);
-
     private CameraMovement cameraMovement;
-
     private SceneNode grass;
-    private Ground ground;
+    private SceneNode ground;
 
     private final List<Matrix4f> grassTransforms = new ArrayList<>();
 
@@ -46,7 +41,8 @@ public class PbrTestLauncher implements SceneRenderer {
     private void instanceObjects(){
         SceneNodeRegistry.preloadAssets();
         grass = SceneNodeRegistry.instantiate("flat_grass", "Grass");
-        ground = Ground.generateChunkOfGround(1);
+        grass.getAsset().setType(AssetType.GRASS);
+        ground = MapLoader.generateGroundForMap(0);
     }
 
     private void generateGrassTransforms() {
@@ -71,10 +67,11 @@ public class PbrTestLauncher implements SceneRenderer {
     }
 
     private void renderObjects(){
-        ground.render(new Matrix4f().identity(), camera, light);
         for (Matrix4f transform : grassTransforms) {
             grass.render(transform, camera, light);
         }
+
+        ground.render(new Matrix4f().identity(), camera, light);
     }
 
     public PbrTestLauncher() {

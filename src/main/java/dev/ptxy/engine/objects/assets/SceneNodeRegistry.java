@@ -1,27 +1,19 @@
 package dev.ptxy.engine.objects.assets;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import dev.ptxy.engine.camera.SimpleCamera3D;
+import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.gltf.GLTFLoader;
 import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.objects.SceneNode;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class SceneNodeRegistry {
-
     private static final Map<String, SceneNode> availableNodes = new HashMap<>();
     private static final Map<String, SceneNode> activeNodes = new HashMap<>();
 
-    /**
-     * Lädt ein GLTF Asset und registriert die SceneNodes.
-     */
     public static void loadAsset(String path) {
         Map<String, SceneNode> nodes = GLTFLoader.loadSceneNodes(path);
         nodes.forEach((name, node) -> {
@@ -62,39 +54,17 @@ public final class SceneNodeRegistry {
         }
     }
 
-    /**
-     * Registriert ein bereits vorhandenes Asset als verfügbaren SceneNode.
-     *
-     * @param name Name für die Node
-     * @param asset Das Asset, das als Node verfügbar sein soll
-     */
     public static void loadAssetFromAsset(String name, Asset asset) {
         SceneNode node = new SceneNode(asset);
         availableNodes.put(name, node);
         System.out.println("[SceneNodeRegistry] Loaded prototype node from Asset: " + name);
     }
 
-    /**
-     * Lädt alle Assets aus resources/SceneConfig.json
-     */
     public static void preloadAssets() {
-        //TODO This needs to be multithreaded to reduce setup times GLFW Context must be set
-        try (Reader reader = new InputStreamReader(
-                SceneNodeRegistry.class.getResourceAsStream("/SceneConfig.json"),
-                StandardCharsets.UTF_8
-        )) {
-            if (reader == null) throw new RuntimeException("SceneConfig.json not found in resources!");
-
-            JsonObject json = new Gson().fromJson(reader, JsonObject.class);
-            JsonArray arr = json.getAsJsonArray("preloadAssets");
-
-            for (int i = 0; i < arr.size(); i++) {
-                String path = arr.get(i).getAsString();
-                loadAsset(path);
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to preload assets from SceneConfig.json", e);
+        JsonArray arr = Config.getConfigJson().getAsJsonArray("preloadAssets");
+        for (int i = 0; i < arr.size(); i++) {
+            String path = arr.get(i).getAsString();
+            loadAsset(path);
         }
     }
 }
