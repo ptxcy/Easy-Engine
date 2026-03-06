@@ -114,9 +114,9 @@ public class Asset {
         baseColors.get(2).bind(2);
         noiseTexture.bind(3);
 
-        ShaderUtils.setUniformFloat(shader, "mixStrength", Config.getConfigJson().getAsJsonObject("groundConfig").get("mixStrength").getAsFloat());
-        ShaderUtils.setUniformFloat(shader, "terrainSize", Config.getConfigJson().getAsJsonObject("groundConfig").get("size").getAsInt());
-        ShaderUtils.setUniformFloat(shader, "sharpness", Config.getConfigJson().getAsJsonObject("groundConfig").get("sharpness").getAsFloat());
+        ShaderUtils.setUniformFloat(shader, "mixStrength", Config.getMeadowsConfigMixStrength());
+        ShaderUtils.setUniformFloat(shader, "terrainSize", Config.getMeadowsConfigSize());
+        ShaderUtils.setUniformFloat(shader, "sharpness", Config.getMeadowsConfigSharpness());
     }
 
     private void setShaderVars(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, Integer shader) {

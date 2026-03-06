@@ -1,6 +1,5 @@
 package dev.ptxy.engine.objects.assets;
 
-import com.google.gson.JsonArray;
 import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.gltf.GLTFLoader;
@@ -61,9 +60,8 @@ public final class SceneNodeRegistry {
     }
 
     public static void preloadAssets() {
-        JsonArray arr = Config.getConfigJson().getAsJsonArray("preloadAssets");
-        for (int i = 0; i < arr.size(); i++) {
-            String path = arr.get(i).getAsString();
+        String[] arr = Config.getPreloadAssets();
+        for (String path : arr) {
             loadAsset(path);
         }
     }

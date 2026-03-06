@@ -21,10 +21,9 @@ public class ShaderCompiler {
     }
 
     public static void preloadConfiguredShaders(String vertexPath, String fragmentPath) {
-        JsonArray arr = Config.getConfigJson().getAsJsonArray("preloadShader");
+        String[] arr = Config.getPreloadShaders();
         try {
-            for (int i = 0; i < arr.size(); i++) {
-                String path = arr.get(i).getAsString();
+            for (String path : arr) {
                 System.out.println("Preloading Shader: " + path);
                 Integer shaderId = compile(path + "/vertex.glsl", path + "/fragment.glsl");
                 String[] pathParts = path.splitWithDelimiters("/", 2);

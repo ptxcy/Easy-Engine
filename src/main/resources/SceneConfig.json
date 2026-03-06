@@ -3,15 +3,18 @@
     "pixel_grass.gltf",
     "grass_ground_ref.gltf"
   ],
-  "preloadShader": [
+  "preloadShaders": [
     "shader/grass",
     "shader/ground"
   ],
-  "groundConfig": {
-    "noiseScale": 256.0,
-    "sharpness": 0.2,
-    "mixStrength": 0.2,
+  "mapConfig": {
     "size": 512.0,
-    "resolution": 1000
+    "meadowsConfig": {
+      "grassTextureNoiseScale": 200.0,
+      "sharpness": 0.4,
+      "mixStrength": 0.2,
+      "resolution": 1000,
+      "size": 512.0
+    }
   }
 }

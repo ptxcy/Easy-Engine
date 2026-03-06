@@ -25,7 +25,7 @@ public class MeadowsBiomeLoader {
     public SceneNode generateMeadows(long seed, int size) {
         BIOME_SIZE = size;
 
-        return generateMeadowGround(seed, generateNoiseTexture(seed), size, Config.getConfigJson().getAsJsonObject("groundConfig").get("resolution").getAsInt());
+        return generateMeadowGround(seed, generateNoiseTexture(seed), size, Config.getMeadowsConfigResolution());
     }
 
     private Texture generateNoiseTexture(long seed) {
@@ -35,7 +35,7 @@ public class MeadowsBiomeLoader {
 
         ByteBuffer buffer = BufferUtils.createByteBuffer(BIOME_SIZE * BIOME_SIZE * 4);
 
-        double scale = Config.getConfigJson().getAsJsonObject("groundConfig").get("noiseScale").getAsFloat();
+        double scale = Config.getMeadowsConfigTextureNoiseScale();
         System.out.println(scale);
         for (int y = 0; y < BIOME_SIZE; y++) {
             for (int x = 0; x < BIOME_SIZE; x++) {
