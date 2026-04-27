@@ -5,7 +5,12 @@ import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public final class GameWindow {
+    private static final Logger log = LogManager.getLogger(GameWindow.class);
+
     private static GameWindow currentActiveWindow;
     private final Integer width;
     private final Integer height;
@@ -21,17 +26,21 @@ public final class GameWindow {
         this.monitor = monitor;
         this.share = share;
         windowHandle = glfwCreateWindow(width, height, title, monitor, share);
-        if (windowHandle == NULL)
-            throw new RuntimeException("Failed to create the GLFW window");
+        if (windowHandle == NULL) throw new RuntimeException("Failed to create the GLFW window");
+        log.info("Window created — {}x{} \"{}\"", width, height, title);
     }
 
     public static GameWindow getActiveWindow() {
         if (currentActiveWindow != null) return currentActiveWindow;
-        throw new RuntimeException("Tryed to get the current Window Object before Instanciating it (Window Object was null Core Class must be instantiated first)");
+        throw new RuntimeException(
+                "Tryed to get the current Window Object before Instanciating it (Window Object was"
+                        + " null Core Class must be instantiated first)");
     }
 
-    public static void createWindow(Integer width, Integer height, String title, Long monitor, Long share) {
+    public static void createWindow(
+            Integer width, Integer height, String title, Long monitor, Long share) {
         if (currentActiveWindow != null) {
+            log.debug("Destroying existing window before recreation");
             glfwFreeCallbacks(GameWindow.getActiveWindow().getWindowHandle());
             glfwDestroyWindow(GameWindow.getActiveWindow().getWindowHandle());
         }
@@ -41,6 +50,7 @@ public final class GameWindow {
 
     public static void createWindowFromSystemProperties() {
         if (currentActiveWindow != null) {
+            log.debug("Destroying existing window before recreation");
             glfwFreeCallbacks(GameWindow.getActiveWindow().getWindowHandle());
             glfwDestroyWindow(GameWindow.getActiveWindow().getWindowHandle());
         }
@@ -50,11 +60,18 @@ public final class GameWindow {
         String title = System.getProperty("WINDOW_TITLE", "Game");
         long monitor = Long.parseLong(System.getProperty("WINDOW_MONITOR", "0"));
         long share = Long.parseLong(System.getProperty("WINDOW_SHARE", "0"));
+
+        log.debug("Creating window from system properties — {}x{} \"{}\"", width, height, title);
         currentActiveWindow = new GameWindow(width, height, title, monitor, share);
     }
 
     public static void clearWindow() {
         if (currentActiveWindow != null) {
+            log.info(
+                    "Destroying window \"{}\" ({}x{})",
+                    currentActiveWindow.title,
+                    currentActiveWindow.width,
+                    currentActiveWindow.height);
             glfwFreeCallbacks(GameWindow.getActiveWindow().getWindowHandle());
             glfwDestroyWindow(GameWindow.getActiveWindow().getWindowHandle());
         }
@@ -86,13 +103,20 @@ public final class GameWindow {
 
     @Override
     public String toString() {
-        return "GameWindow: {" +
-                "width=" + width +
-                ", height=" + height +
-                ", title='" + title + '\'' +
-                ", monitor=" + monitor +
-                ", share=" + share +
-                ", window=" + windowHandle +
-                '}';
+        return "GameWindow: {"
+                + "width="
+                + width
+                + ", height="
+                + height
+                + ", title='"
+                + title
+                + '\''
+                + ", monitor="
+                + monitor
+                + ", share="
+                + share
+                + ", window="
+                + windowHandle
+                + '}';
     }
 }

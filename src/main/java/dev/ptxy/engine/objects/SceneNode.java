@@ -3,10 +3,9 @@ package dev.ptxy.engine.objects;
 import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.objects.assets.Asset;
-import org.joml.Matrix4f;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.joml.Matrix4f;
 
 public final class SceneNode {
 
@@ -48,7 +47,7 @@ public final class SceneNode {
     }
 
     public void render(Matrix4f identity, SimpleCamera3D camera, DirectionalLight light) {
-        asset.render(identity,camera,light);
-        children.forEach(node->render(identity,camera,light));
+        asset.render(identity, camera, light);
+        children.forEach(node -> render(identity, camera, light));
     }
 }

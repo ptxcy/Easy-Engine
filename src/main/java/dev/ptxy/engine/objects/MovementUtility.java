@@ -4,14 +4,13 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class MovementUtility {
-    //TODO Add Methods for working with the Transform Matrix so that Calculation with normal world coordinates can be applied
+    // TODO Add Methods for working with the Transform Matrix so that Calculation with normal world
+    // coordinates can be applied
     private MovementUtility() {
         throw new IllegalStateException("Utility Class");
     }
 
-    /**
-     * Sets the world/local position (translation) to x,y,z while preserving rotation and scale.
-     */
+    /** Sets the world/local position (translation) to x,y,z while preserving rotation and scale. */
     public static Matrix4f setPosition(Matrix4f transform, float x, float y, float z) {
         if (transform == null) throw new IllegalArgumentException("transform must not be null");
         return transform.setTranslation(x, y, z);
@@ -23,8 +22,8 @@ public class MovementUtility {
     }
 
     /**
-     * Moves (adds) a delta translation in the matrix' current space.
-     * Note: This applies a translation multiplication, which is typically what you want for "move by".
+     * Moves (adds) a delta translation in the matrix' current space. Note: This applies a
+     * translation multiplication, which is typically what you want for "move by".
      */
     public static Matrix4f translate(Matrix4f transform, float dx, float dy, float dz) {
         if (transform == null) throw new IllegalArgumentException("transform must not be null");

@@ -3,7 +3,6 @@ package dev.ptxy.engine.objects.assets;
 import dev.ptxy.engine.objects.Triangle;
 import dev.ptxy.engine.objects.properties.Material;
 import dev.ptxy.engine.shader.Texture;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -100,7 +99,7 @@ public class AssetBuilder {
     }
 
     private void checkGrassAssetIntegrity() {
-        //Until now only needs the base checks
+        // Until now only needs the base checks
     }
 
     private void checkGroundAssetIntegrity() {
@@ -128,7 +127,6 @@ public class AssetBuilder {
                 "Asset integrity error while constructing Asset of type: "
                         + asset.getType().name()
                         + "\nAdditional Info: "
-                        + infoMessage
-        );
+                        + infoMessage);
     }
 }

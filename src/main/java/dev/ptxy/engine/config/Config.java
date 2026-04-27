@@ -24,41 +24,61 @@ public class Config {
         }
     }
 
-    public static String[] getPreloadAssets(){
+    public static String[] getPreloadAssets() {
         return StreamSupport.stream(
-                CONFIG_JSON.get("preloadAssets").getAsJsonArray().spliterator(), false)
-            .map(JsonElement::getAsString)
-            .toArray(String[]::new);
+                        CONFIG_JSON.get("preloadAssets").getAsJsonArray().spliterator(), false)
+                .map(JsonElement::getAsString)
+                .toArray(String[]::new);
     }
 
-    public static String[] getPreloadShaders(){
+    public static String[] getPreloadShaders() {
         return StreamSupport.stream(
-                CONFIG_JSON.get("preloadShaders").getAsJsonArray().spliterator(), false)
-            .map(JsonElement::getAsString)
-            .toArray(String[]::new);
+                        CONFIG_JSON.get("preloadShaders").getAsJsonArray().spliterator(), false)
+                .map(JsonElement::getAsString)
+                .toArray(String[]::new);
     }
 
-    public static Integer getMapConfigSize(){
+    public static Integer getMapConfigSize() {
         return CONFIG_JSON.getAsJsonObject("mapConfig").get("size").getAsInt();
     }
 
-    public static Float getMeadowsConfigSharpness(){
-        return CONFIG_JSON.getAsJsonObject("mapConfig").getAsJsonObject("meadowsConfig").get("sharpness").getAsFloat();
+    public static Float getMeadowsConfigSharpness() {
+        return CONFIG_JSON
+                .getAsJsonObject("mapConfig")
+                .getAsJsonObject("meadowsConfig")
+                .get("sharpness")
+                .getAsFloat();
     }
 
-    public static Integer getMeadowsConfigResolution(){
-        return CONFIG_JSON.getAsJsonObject("mapConfig").getAsJsonObject("meadowsConfig").get("resolution").getAsInt();
+    public static Integer getMeadowsConfigResolution() {
+        return CONFIG_JSON
+                .getAsJsonObject("mapConfig")
+                .getAsJsonObject("meadowsConfig")
+                .get("resolution")
+                .getAsInt();
     }
 
-    public static Float getMeadowsConfigMixStrength(){
-        return CONFIG_JSON.getAsJsonObject("mapConfig").getAsJsonObject("meadowsConfig").get("mixStrength").getAsFloat();
+    public static Float getMeadowsConfigMixStrength() {
+        return CONFIG_JSON
+                .getAsJsonObject("mapConfig")
+                .getAsJsonObject("meadowsConfig")
+                .get("mixStrength")
+                .getAsFloat();
     }
 
-    public static Integer getMeadowsConfigSize(){
-        return CONFIG_JSON.getAsJsonObject("mapConfig").getAsJsonObject("meadowsConfig").get("size").getAsInt();
+    public static Integer getMeadowsConfigSize() {
+        return CONFIG_JSON
+                .getAsJsonObject("mapConfig")
+                .getAsJsonObject("meadowsConfig")
+                .get("size")
+                .getAsInt();
     }
 
-    public static Float getMeadowsConfigTextureNoiseScale(){
-        return CONFIG_JSON.getAsJsonObject("mapConfig").getAsJsonObject("meadowsConfig").get("grassTextureNoiseScale").getAsFloat();
+    public static Float getMeadowsConfigTextureNoiseScale() {
+        return CONFIG_JSON
+                .getAsJsonObject("mapConfig")
+                .getAsJsonObject("meadowsConfig")
+                .get("grassTextureNoiseScale")
+                .getAsFloat();
     }
 }

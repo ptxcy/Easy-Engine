@@ -1,5 +1,9 @@
 package dev.ptxy.engine.objects.assets;
 
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL30.*;
+
 import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.light.DirectionalLight;
@@ -8,16 +12,11 @@ import dev.ptxy.engine.objects.properties.Material;
 import dev.ptxy.engine.shader.ShaderCompiler;
 import dev.ptxy.engine.shader.ShaderUtils;
 import dev.ptxy.engine.shader.Texture;
-import org.joml.Matrix4f;
-import org.lwjgl.BufferUtils;
-
 import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.Objects;
-
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.glUseProgram;
-import static org.lwjgl.opengl.GL30.*;
+import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
 
 public class Asset {
     private String id;
@@ -28,7 +27,7 @@ public class Asset {
     private List<Texture> metallicRoughness;
     private List<Texture> normalMaps;
 
-    //Optional parameters
+    // Optional parameters
     private Texture noiseTexture;
 
     private int vaoId = -1;
@@ -89,12 +88,12 @@ public class Asset {
 
         int shader = ShaderCompiler.getShader(type.name().toLowerCase());
         glUseProgram(shader);
-        setShaderVars(transform,camera,light,shader);
+        setShaderVars(transform, camera, light, shader);
         switch (type) {
             case GRASS -> setGrassShaderVars(shader);
             case GROUND -> setGroundShaderVars(shader);
             default -> {
-                //Nothing i guess
+                // Nothing i guess
             }
         }
 
@@ -102,8 +101,12 @@ public class Asset {
     }
 
     private void setGroundShaderVars(Integer shader) {
-        if(noiseTexture == null) throw new RuntimeException("Noise texture not set but is required for: " + type.name() + " shader");
-        if(baseColors.size() < 3) throw new RuntimeException("Basecolor List of Ground Texture is to small: " + baseColors.size());
+        if (noiseTexture == null)
+            throw new RuntimeException(
+                    "Noise texture not set but is required for: " + type.name() + " shader");
+        if (baseColors.size() < 3)
+            throw new RuntimeException(
+                    "Basecolor List of Ground Texture is to small: " + baseColors.size());
         ShaderUtils.setUniformInt(shader, "diffuseTexOne", 0);
         ShaderUtils.setUniformInt(shader, "diffuseTexTwo", 1);
         ShaderUtils.setUniformInt(shader, "diffuseTexThree", 2);
@@ -119,7 +122,8 @@ public class Asset {
         ShaderUtils.setUniformFloat(shader, "sharpness", Config.getMeadowsConfigSharpness());
     }
 
-    private void setShaderVars(Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, Integer shader) {
+    private void setShaderVars(
+            Matrix4f transform, SimpleCamera3D camera, DirectionalLight light, Integer shader) {
         // Matrizen
         ShaderUtils.setUniformMat4(shader, "model", transform);
         ShaderUtils.setUniformMat4(shader, "view", camera.getViewMatrix());
@@ -165,6 +169,7 @@ public class Asset {
     }
 
     long gameStartTime = System.currentTimeMillis();
+
     public void setGrassShaderVars(Integer shaderId) {
         long currentTime = System.currentTimeMillis();
         float elapsedTime = (currentTime - gameStartTime) / 1000f;

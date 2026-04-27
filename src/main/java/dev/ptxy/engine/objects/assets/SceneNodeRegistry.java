@@ -5,7 +5,6 @@ import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.gltf.GLTFLoader;
 import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.objects.SceneNode;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,10 +14,11 @@ public final class SceneNodeRegistry {
 
     public static void loadAsset(String path) {
         Map<String, SceneNode> nodes = GLTFLoader.loadSceneNodes(path);
-        nodes.forEach((name, node) -> {
-            availableNodes.put(name, node);
-            System.out.println("[SceneNodeRegistry] Loaded prototype node: " + name);
-        });
+        nodes.forEach(
+                (name, node) -> {
+                    availableNodes.put(name, node);
+                    System.out.println("[SceneNodeRegistry] Loaded prototype node: " + name);
+                });
     }
 
     public static SceneNode getAvailable(String name) {
@@ -31,7 +31,12 @@ public final class SceneNodeRegistry {
         SceneNode proto = getAvailable(name);
         SceneNode instance = proto.cloneNode();
         activeNodes.put(instanceId, instance);
-        System.out.println("[SceneNodeRegistry] Activated node: " + instanceId + " (from prototype: " + name + ")");
+        System.out.println(
+                "[SceneNodeRegistry] Activated node: "
+                        + instanceId
+                        + " (from prototype: "
+                        + name
+                        + ")");
         return instance;
     }
 

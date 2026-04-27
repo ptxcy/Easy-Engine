@@ -2,6 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id 'java'
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 group = 'dev.ptxcy.game'
@@ -69,6 +70,9 @@ dependencies {
     implementation "org.joml:joml:${jomlVersion}"
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation("de.articdive:jnoise-pipeline:4.1.0")
+
+    implementation 'org.apache.logging.log4j:log4j-api:2.24.3'
+    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
 }
 
 tasks.register("copyAssets", Copy) {
@@ -113,4 +117,12 @@ jar {
 
 test {
     useJUnitPlatform()
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.22.0').aosp().reflowLongStrings()
+        importOrder()
+        removeUnusedImports()
+    }
 }

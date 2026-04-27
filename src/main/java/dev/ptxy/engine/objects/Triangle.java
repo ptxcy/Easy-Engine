@@ -3,11 +3,7 @@ package dev.ptxy.engine.objects;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public record Triangle(
-        Vector3f[] formData,
-        Vector3f[] normals,
-        Vector2f[] uvCoords
-) {
+public record Triangle(Vector3f[] formData, Vector3f[] normals, Vector2f[] uvCoords) {
     public Triangle {
         if (formData == null || formData.length != 3)
             throw new IllegalArgumentException("formData must have exactly 3 elements");

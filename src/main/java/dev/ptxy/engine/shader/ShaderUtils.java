@@ -1,12 +1,11 @@
 package dev.ptxy.engine.shader;
 
+import static org.lwjgl.opengl.GL20.*;
+
+import java.nio.FloatBuffer;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
-
-import java.nio.FloatBuffer;
-
-import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderUtils {
     public static void setUniformInt(int program, String name, int value) {
@@ -33,4 +32,3 @@ public class ShaderUtils {
         }
     }
 }
-

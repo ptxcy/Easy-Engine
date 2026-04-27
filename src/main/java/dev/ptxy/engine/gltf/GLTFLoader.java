@@ -1,5 +1,7 @@
 package dev.ptxy.engine.gltf;
 
+import static org.lwjgl.assimp.Assimp.*;
+
 import dev.ptxy.engine.objects.SceneNode;
 import dev.ptxy.engine.objects.Triangle;
 import dev.ptxy.engine.objects.assets.Asset;
@@ -8,34 +10,31 @@ import dev.ptxy.engine.objects.assets.AssetPaths;
 import dev.ptxy.engine.objects.assets.AssetType;
 import dev.ptxy.engine.objects.properties.Material;
 import dev.ptxy.engine.shader.Texture;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
+import java.util.*;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
-import java.util.*;
-
-import static org.lwjgl.assimp.Assimp.*;
-
 public final class GLTFLoader {
 
     /**
-     * Lädt ein GLTF File und gibt eine Map von SceneNodes zurück,
-     * wobei Nodes ohne Assets ignoriert werden.
+     * Lädt ein GLTF File und gibt eine Map von SceneNodes zurück, wobei Nodes ohne Assets ignoriert
+     * werden.
      */
     public static Map<String, SceneNode> loadSceneNodes(String path) {
-        AIScene scene = aiImportFile(
-                AssetPaths.asset(path).toString(),
-                aiProcess_Triangulate |
-                        aiProcess_JoinIdenticalVertices |
-                        aiProcess_FlipUVs |
-                        aiProcess_GenNormals |
-                        aiProcess_CalcTangentSpace
-        );
+        AIScene scene =
+                aiImportFile(
+                        AssetPaths.asset(path).toString(),
+                        aiProcess_Triangulate
+                                | aiProcess_JoinIdenticalVertices
+                                | aiProcess_FlipUVs
+                                | aiProcess_GenNormals
+                                | aiProcess_CalcTangentSpace);
 
         if (scene == null) {
             throw new RuntimeException("Failed to load GLTF: " + aiGetErrorString());
@@ -46,7 +45,8 @@ public final class GLTFLoader {
         return nodes;
     }
 
-    private static void processNode(AINode node, AIScene scene, Map<String, SceneNode> outNodes, SceneNode parent) {
+    private static void processNode(
+            AINode node, AIScene scene, Map<String, SceneNode> outNodes, SceneNode parent) {
         Asset asset = loadMeshIfPresent(node, scene);
 
         if (asset != null) {
@@ -113,15 +113,15 @@ public final class GLTFLoader {
             int i2 = face.mIndices().get(2);
 
             Vector3f[] vertexs = {
-                    new Vector3f(verts.get(i0).x(), verts.get(i0).y(), verts.get(i0).z()),
-                    new Vector3f(verts.get(i1).x(), verts.get(i1).y(), verts.get(i1).z()),
-                    new Vector3f(verts.get(i2).x(), verts.get(i2).y(), verts.get(i2).z())
+                new Vector3f(verts.get(i0).x(), verts.get(i0).y(), verts.get(i0).z()),
+                new Vector3f(verts.get(i1).x(), verts.get(i1).y(), verts.get(i1).z()),
+                new Vector3f(verts.get(i2).x(), verts.get(i2).y(), verts.get(i2).z())
             };
 
             Vector3f[] normals = {
-                    new Vector3f(norms.get(i0).x(), norms.get(i0).y(), norms.get(i0).z()),
-                    new Vector3f(norms.get(i1).x(), norms.get(i1).y(), norms.get(i1).z()),
-                    new Vector3f(norms.get(i2).x(), norms.get(i2).y(), norms.get(i2).z())
+                new Vector3f(norms.get(i0).x(), norms.get(i0).y(), norms.get(i0).z()),
+                new Vector3f(norms.get(i1).x(), norms.get(i1).y(), norms.get(i1).z()),
+                new Vector3f(norms.get(i2).x(), norms.get(i2).y(), norms.get(i2).z())
             };
 
             Vector2f[] uv = new Vector2f[3];
@@ -137,18 +137,22 @@ public final class GLTFLoader {
             Vector3f[] bitang = new Vector3f[3];
             for (int i = 0; i < 3; i++) {
                 if (tangents != null) {
-                    tang[i] = new Vector3f(tangents.get(face.mIndices().get(i)).x(),
-                            tangents.get(face.mIndices().get(i)).y(),
-                            tangents.get(face.mIndices().get(i)).z());
+                    tang[i] =
+                            new Vector3f(
+                                    tangents.get(face.mIndices().get(i)).x(),
+                                    tangents.get(face.mIndices().get(i)).y(),
+                                    tangents.get(face.mIndices().get(i)).z());
                 } else {
-                    tang[i] = new Vector3f(1,0,0);
+                    tang[i] = new Vector3f(1, 0, 0);
                 }
 
-                if(bitangents != null){
-                    bitang[i] = new Vector3f(bitangents.get(face.mIndices().get(i)).x(),
-                            bitangents.get(face.mIndices().get(i)).y(),
-                            bitangents.get(face.mIndices().get(i)).z());
-                }else{
+                if (bitangents != null) {
+                    bitang[i] =
+                            new Vector3f(
+                                    bitangents.get(face.mIndices().get(i)).x(),
+                                    bitangents.get(face.mIndices().get(i)).y(),
+                                    bitangents.get(face.mIndices().get(i)).z());
+                } else {
                     bitang[i] = new Vector3f();
                     bitang[i].cross(normals[i], tang[i]).normalize();
                 }
@@ -164,8 +168,8 @@ public final class GLTFLoader {
         Material mat = new Material();
         AIColor4D color = AIColor4D.create();
 
-        if (aiGetMaterialColor(aiMat, AI_MATKEY_BASE_COLOR, 0, 0, color) == 0 ||
-                aiGetMaterialColor(aiMat, AI_MATKEY_COLOR_DIFFUSE, 0, 0, color) == 0) {
+        if (aiGetMaterialColor(aiMat, AI_MATKEY_BASE_COLOR, 0, 0, color) == 0
+                || aiGetMaterialColor(aiMat, AI_MATKEY_COLOR_DIFFUSE, 0, 0, color) == 0) {
             mat.setAlbedo(new Vector3f(color.r(), color.g(), color.b()));
         }
 
@@ -188,7 +192,8 @@ public final class GLTFLoader {
         AIString path = AIString.calloc();
         Texture tex = null;
 
-        if (aiGetMaterialTexture(mat, type, 0, path, (IntBuffer) null, null, null, null, null, null) == 0) {
+        if (aiGetMaterialTexture(mat, type, 0, path, (IntBuffer) null, null, null, null, null, null)
+                == 0) {
             tex = new Texture(AssetPaths.asset(path.dataString()).toString());
         }
 
@@ -198,10 +203,7 @@ public final class GLTFLoader {
 
     private static Matrix4f convertTransform(AIMatrix4x4 m) {
         return new Matrix4f(
-                m.a1(), m.b1(), m.c1(), m.d1(),
-                m.a2(), m.b2(), m.c2(), m.d2(),
-                m.a3(), m.b3(), m.c3(), m.d3(),
-                m.a4(), m.b4(), m.c4(), m.d4()
-        );
+                m.a1(), m.b1(), m.c1(), m.d1(), m.a2(), m.b2(), m.c2(), m.d2(), m.a3(), m.b3(),
+                m.c3(), m.d3(), m.a4(), m.b4(), m.c4(), m.d4());
     }
 }

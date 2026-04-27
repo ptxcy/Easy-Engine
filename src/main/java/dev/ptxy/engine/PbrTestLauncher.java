@@ -9,17 +9,22 @@ import dev.ptxy.engine.objects.MovementUtility;
 import dev.ptxy.engine.objects.SceneNode;
 import dev.ptxy.engine.objects.assets.AssetType;
 import dev.ptxy.engine.objects.assets.SceneNodeRegistry;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class PbrTestLauncher implements SceneRenderer {
+    private static final Logger log = LogManager.getLogger(PbrTestLauncher.class);
+
     private boolean initiated = false;
-    private final DirectionalLight light = new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
-    private final SimpleCamera3D camera = new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 10000f);
+    private final DirectionalLight light =
+            new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
+    private final SimpleCamera3D camera =
+            new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 10000f);
     private CameraMovement cameraMovement;
     private SceneNode grass;
     private SceneNode ground;
@@ -30,7 +35,9 @@ public class PbrTestLauncher implements SceneRenderer {
     public void renderScene() {
         if (!initiated) {
             initiated = true;
-            cameraMovement = new CameraMovement(GLFW.glfwGetCurrentContext(), 0.05f, (float) Math.toRadians(1), camera);
+            cameraMovement =
+                    new CameraMovement(
+                            GLFW.glfwGetCurrentContext(), 0.05f, (float) Math.toRadians(1), camera);
             instanceObjects();
             generateGrassTransforms();
         }
@@ -38,7 +45,8 @@ public class PbrTestLauncher implements SceneRenderer {
         renderObjects();
     }
 
-    private void instanceObjects(){
+    private void instanceObjects() {
+        log.info("Loading scene objects");
         SceneNodeRegistry.preloadAssets();
         grass = SceneNodeRegistry.instantiate("flat_grass", "Grass");
         grass.getAsset().setType(AssetType.GRASS);
@@ -47,6 +55,7 @@ public class PbrTestLauncher implements SceneRenderer {
 
     private void generateGrassTransforms() {
         int grassCount = 100;
+        log.debug("Generating {} grass instances", grassCount);
         int size = 10;
         for (int i = 0; i < grassCount; i++) {
             float x = (float) Math.random() * size;
@@ -54,19 +63,19 @@ public class PbrTestLauncher implements SceneRenderer {
             float y = 0.3f;
 
             Matrix4f transform = new Matrix4f().identity();
-            transform.scale(0.5f,0.5f,0.5f);
+            transform.scale(0.5f, 0.5f, 0.5f);
             float rotY = (float) (Math.random() * Math.PI * 2);
             transform.rotateY(rotY);
             transform.rotateX((float) (Math.PI / 2));
             float maxDeg = 10f;
-            float rotX = (float)((Math.random() * 2.0 - 1.0) * Math.toRadians(maxDeg));
+            float rotX = (float) ((Math.random() * 2.0 - 1.0) * Math.toRadians(maxDeg));
             transform.rotateX(rotX);
             transform = MovementUtility.setPosition(transform, x, y, z);
             grassTransforms.add(transform);
         }
     }
 
-    private void renderObjects(){
+    private void renderObjects() {
         for (Matrix4f transform : grassTransforms) {
             grass.render(transform, camera, light);
         }

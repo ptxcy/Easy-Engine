@@ -1,22 +1,21 @@
 package dev.ptxy.engine.shader;
 
-import com.google.gson.JsonArray;
-import dev.ptxy.engine.config.Config;
+import static org.lwjgl.opengl.GL30.*;
 
-import javax.naming.ConfigurationException;
+import dev.ptxy.engine.config.Config;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.lwjgl.opengl.GL30.*;
+import javax.naming.ConfigurationException;
 
 public class ShaderCompiler {
     private static final Map<String, Integer> shaderMap = new HashMap<>();
 
     public static Integer getShader(String name) {
         Integer id = shaderMap.get(name);
-        if (id == null) throw new RuntimeException("Requested Shader id was null for name: " + name);
+        if (id == null)
+            throw new RuntimeException("Requested Shader id was null for name: " + name);
         return id;
     }
 
@@ -28,7 +27,9 @@ public class ShaderCompiler {
                 Integer shaderId = compile(path + "/vertex.glsl", path + "/fragment.glsl");
                 String[] pathParts = path.splitWithDelimiters("/", 2);
                 if (pathParts.length <= 1)
-                    throw new ConfigurationException("Configured Shader path in Scene.config must at least have 2 dirs shader/name");
+                    throw new ConfigurationException(
+                            "Configured Shader path in Scene.config must at least have 2 dirs"
+                                    + " shader/name");
                 String name = pathParts[pathParts.length - 1];
                 shaderMap.put(name, shaderId);
             }
@@ -77,7 +78,9 @@ public class ShaderCompiler {
     }
 
     private static String readShaderFile(String path) {
-        try (var stream = ShaderCompiler.class.getResourceAsStream(path.startsWith("/") ? path : "/" + path)) {
+        try (var stream =
+                ShaderCompiler.class.getResourceAsStream(
+                        path.startsWith("/") ? path : "/" + path)) {
             if (stream == null) {
                 throw new RuntimeException("Shader file not found: " + path);
             }
