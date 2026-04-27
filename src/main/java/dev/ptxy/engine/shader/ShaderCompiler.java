@@ -8,8 +8,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import javax.naming.ConfigurationException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ShaderCompiler {
+    private static final Logger log = LogManager.getLogger(ShaderCompiler.class);
     private static final Map<String, Integer> shaderMap = new HashMap<>();
 
     public static Integer getShader(String name) {
@@ -21,9 +24,11 @@ public class ShaderCompiler {
 
     public static void preloadConfiguredShaders(String vertexPath, String fragmentPath) {
         String[] arr = Config.getPreloadShaders();
+        long totalStart = System.nanoTime();
+        log.info("Preloading {} configured shader(s)", arr.length);
         try {
             for (String path : arr) {
-                System.out.println("Preloading Shader: " + path);
+                long t = System.nanoTime();
                 Integer shaderId = compile(path + "/vertex.glsl", path + "/fragment.glsl");
                 String[] pathParts = path.splitWithDelimiters("/", 2);
                 if (pathParts.length <= 1)
@@ -32,10 +37,16 @@ public class ShaderCompiler {
                                     + " shader/name");
                 String name = pathParts[pathParts.length - 1];
                 shaderMap.put(name, shaderId);
+                log.debug(
+                        "Shader \"{}\" compiled and linked in {}ms (id={})",
+                        name,
+                        elapsed(t),
+                        shaderId);
             }
         } catch (ConfigurationException ce) {
             throw new RuntimeException(ce.getMessage());
         }
+        log.info("All shaders preloaded in {}ms", elapsed(totalStart));
     }
 
     public static int compile(String vertexPath, String fragmentPath) {
@@ -51,8 +62,8 @@ public class ShaderCompiler {
         glLinkProgram(shaderProgram);
 
         if (glGetProgrami(shaderProgram, GL_LINK_STATUS) == GL_FALSE) {
-            String log = glGetProgramInfoLog(shaderProgram);
-            System.err.println("Shader Program Linking Error:\n" + log);
+            String info = glGetProgramInfoLog(shaderProgram);
+            log.error("Shader program linking failed:\n{}", info);
             throw new RuntimeException("Shader program linking failed");
         }
 
@@ -68,9 +79,9 @@ public class ShaderCompiler {
         glCompileShader(shader);
 
         if (glGetShaderi(shader, GL_COMPILE_STATUS) == GL_FALSE) {
-            String log = glGetShaderInfoLog(shader);
+            String info = glGetShaderInfoLog(shader);
             String typeName = type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT";
-            System.err.println(typeName + " Shader Compilation Error:\n" + log);
+            log.error("{} shader compilation failed:\n{}", typeName, info);
             throw new RuntimeException(typeName + " shader compilation failed");
         }
 
@@ -88,5 +99,9 @@ public class ShaderCompiler {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load shader file: " + path, e);
         }
+    }
+
+    private static long elapsed(long nanoStart) {
+        return (System.nanoTime() - nanoStart) / 1_000_000L;
     }
 }

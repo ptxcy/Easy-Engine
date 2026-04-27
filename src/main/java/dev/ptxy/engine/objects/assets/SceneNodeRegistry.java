@@ -7,8 +7,12 @@ import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.objects.SceneNode;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class SceneNodeRegistry {
+    private static final Logger log = LogManager.getLogger(SceneNodeRegistry.class);
+
     private static final Map<String, SceneNode> availableNodes = new HashMap<>();
     private static final Map<String, SceneNode> activeNodes = new HashMap<>();
 
@@ -17,7 +21,7 @@ public final class SceneNodeRegistry {
         nodes.forEach(
                 (name, node) -> {
                     availableNodes.put(name, node);
-                    System.out.println("[SceneNodeRegistry] Loaded prototype node: " + name);
+                    log.debug("Loaded prototype node: {}", name);
                 });
     }
 
@@ -31,12 +35,7 @@ public final class SceneNodeRegistry {
         SceneNode proto = getAvailable(name);
         SceneNode instance = proto.cloneNode();
         activeNodes.put(instanceId, instance);
-        System.out.println(
-                "[SceneNodeRegistry] Activated node: "
-                        + instanceId
-                        + " (from prototype: "
-                        + name
-                        + ")");
+        log.info("Activated node: {} (prototype: {})", instanceId, name);
         return instance;
     }
 
@@ -45,7 +44,7 @@ public final class SceneNodeRegistry {
             throw new RuntimeException("Active Node not found: " + instanceId);
         }
         activeNodes.remove(instanceId);
-        System.out.println("[SceneNodeRegistry] Deactivated node: " + instanceId);
+        log.info("Deactivated node: {}", instanceId);
     }
 
     public static boolean isActive(String instanceId) {
@@ -61,11 +60,12 @@ public final class SceneNodeRegistry {
     public static void loadAssetFromAsset(String name, Asset asset) {
         SceneNode node = new SceneNode(asset);
         availableNodes.put(name, node);
-        System.out.println("[SceneNodeRegistry] Loaded prototype node from Asset: " + name);
+        log.debug("Loaded prototype node from Asset: {}", name);
     }
 
     public static void preloadAssets() {
         String[] arr = Config.getPreloadAssets();
+        log.info("Preloading {} asset(s)", arr.length);
         for (String path : arr) {
             loadAsset(path);
         }

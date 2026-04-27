@@ -96,6 +96,7 @@ tasks.register("runEngine", Exec) {
     if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
         cmd += ["-XstartOnFirstThread"]
     }
+    cmd += ["--enable-native-access=ALL-UNNAMED"]
     cmd += ["-jar", jar.archiveFile.get().asFile.name]
 
     commandLine(cmd)
@@ -104,7 +105,8 @@ tasks.register("runEngine", Exec) {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'dev.ptxy.engine.PbrTestLauncher'
+                'Main-Class': 'dev.ptxy.engine.PbrTestLauncher',
+                'Enable-Native-Access': 'ALL-UNNAMED'
         )
     }
 
