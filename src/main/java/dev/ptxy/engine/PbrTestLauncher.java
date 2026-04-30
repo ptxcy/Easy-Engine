@@ -9,6 +9,7 @@ import dev.ptxy.engine.objects.MovementUtility;
 import dev.ptxy.engine.objects.SceneNode;
 import dev.ptxy.engine.objects.assets.AssetType;
 import dev.ptxy.engine.objects.assets.SceneNodeRegistry;
+import dev.ptxy.engine.world.Player;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -20,12 +21,22 @@ import org.lwjgl.glfw.GLFW;
 public class PbrTestLauncher implements SceneRenderer {
     private static final Logger log = LogManager.getLogger(PbrTestLauncher.class);
 
+    private static final float ROTATE_STEP = (float) Math.toRadians(1);
+    private static final float SPEED_STEP = 0.005f;
+    private static final float MIN_SPEED = 0.005f;
+    private static final float MAX_SPEED = 0.5f;
+
+    private float moveStep = 0.05f;
+
     private boolean initiated = false;
+    private long windowHandle;
+
     private final DirectionalLight light =
             new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
     private final SimpleCamera3D camera =
             new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 10000f);
-    private CameraMovement cameraMovement;
+
+    private Player player;
     private SceneNode grass;
     private SceneNode ground;
 
@@ -35,13 +46,25 @@ public class PbrTestLauncher implements SceneRenderer {
     public void renderScene() {
         if (!initiated) {
             initiated = true;
-            cameraMovement =
-                    new CameraMovement(
-                            GLFW.glfwGetCurrentContext(), 0.05f, (float) Math.toRadians(1), camera);
+            windowHandle = GLFW.glfwGetCurrentContext();
+            player = new Player(0f, 0f, 5f, moveStep);
+            camera.attachTo(player);
             instanceObjects();
             generateGrassTransforms();
         }
-        cameraMovement.handleInput();
+
+        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
+            moveStep = Math.min(moveStep + SPEED_STEP, MAX_SPEED);
+            player.setMoveStep(moveStep);
+        }
+        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS) {
+            moveStep = Math.max(moveStep - SPEED_STEP, MIN_SPEED);
+            player.setMoveStep(moveStep);
+        }
+
+        player.update(windowHandle, camera.getYaw());
+        camera.handleInput(windowHandle, moveStep, ROTATE_STEP);
+
         renderObjects();
     }
 
@@ -79,13 +102,10 @@ public class PbrTestLauncher implements SceneRenderer {
         for (Matrix4f transform : grassTransforms) {
             grass.render(transform, camera, light);
         }
-
         ground.render(new Matrix4f().identity(), camera, light);
     }
 
-    public PbrTestLauncher() {
-        camera.setPosition(new Vector3f(0f, 0f, 5f));
-    }
+    public PbrTestLauncher() {}
 
     public static void main(String[] args) {
         new Core().run(new PbrTestLauncher());
