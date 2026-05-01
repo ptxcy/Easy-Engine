@@ -30,6 +30,7 @@ public final class Core {
     public void run(SceneRenderer sceneRenderer) {
         log.info("Starting game loop");
         loop(sceneRenderer);
+        sceneRenderer.shutdown();
         log.info("Engine shutting down");
         GameWindow.clearWindow();
         glfwTerminate();
@@ -75,7 +76,8 @@ public final class Core {
         }
 
         glfwMakeContextCurrent(GameWindow.getActiveWindow().getWindowHandle());
-        glfwSwapInterval(1);
+        // glfwSwapInterval(1); // vsync an
+        glfwSwapInterval(0); // vsync aus
         glfwShowWindow(GameWindow.getActiveWindow().getWindowHandle());
         glfwFocusWindow(GameWindow.getActiveWindow().getWindowHandle());
 

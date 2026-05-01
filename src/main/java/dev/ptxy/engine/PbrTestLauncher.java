@@ -4,7 +4,7 @@ import dev.ptxy.engine.camera.SimpleCamera3D;
 import dev.ptxy.engine.core.Core;
 import dev.ptxy.engine.core.SceneRenderer;
 import dev.ptxy.engine.light.DirectionalLight;
-import dev.ptxy.engine.map.MapLoader;
+import dev.ptxy.engine.map.ChunkManager;
 import dev.ptxy.engine.objects.MovementUtility;
 import dev.ptxy.engine.objects.SceneNode;
 import dev.ptxy.engine.objects.assets.AssetType;
@@ -21,24 +21,20 @@ import org.lwjgl.glfw.GLFW;
 public class PbrTestLauncher implements SceneRenderer {
     private static final Logger log = LogManager.getLogger(PbrTestLauncher.class);
 
-    private static final float ROTATE_STEP = (float) Math.toRadians(1);
     private static final float SPEED_STEP = 0.005f;
-    private static final float MIN_SPEED = 0.005f;
-    private static final float MAX_SPEED = 0.5f;
 
     private float moveStep = 0.05f;
+    private float rotateStep = (float) Math.toRadians(0.3);
 
     private boolean initiated = false;
     private long windowHandle;
 
     private final DirectionalLight light =
             new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
-    private final SimpleCamera3D camera =
-            new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 10000f);
 
     private Player player;
+    private ChunkManager chunkManager;
     private SceneNode grass;
-    private SceneNode ground;
 
     private final List<Matrix4f> grassTransforms = new ArrayList<>();
 
@@ -47,23 +43,28 @@ public class PbrTestLauncher implements SceneRenderer {
         if (!initiated) {
             initiated = true;
             windowHandle = GLFW.glfwGetCurrentContext();
-            player = new Player(0f, 0f, 5f, moveStep);
-            camera.attachTo(player);
+            SimpleCamera3D camera =
+                    new SimpleCamera3D((float) Math.toRadians(60f), 800f / 600f, 0.1f, 10000f);
+            player = new Player(0f, 0f, 5f, moveStep, camera);
             instanceObjects();
             generateGrassTransforms();
         }
 
         if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
-            moveStep = Math.min(moveStep + SPEED_STEP, MAX_SPEED);
+            moveStep += SPEED_STEP;
             player.setMoveStep(moveStep);
         }
         if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS) {
-            moveStep = Math.max(moveStep - SPEED_STEP, MIN_SPEED);
+            moveStep *= (1f - SPEED_STEP);
             player.setMoveStep(moveStep);
         }
+        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_PRESS)
+            rotateStep *= (1f + SPEED_STEP);
+        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_PRESS)
+            rotateStep *= (1f - SPEED_STEP);
 
-        player.update(windowHandle, camera.getYaw());
-        camera.handleInput(windowHandle, moveStep, ROTATE_STEP);
+        player.update(windowHandle, rotateStep);
+        chunkManager.update(player.getX(), player.getZ());
 
         renderObjects();
     }
@@ -73,7 +74,7 @@ public class PbrTestLauncher implements SceneRenderer {
         SceneNodeRegistry.preloadAssets();
         grass = SceneNodeRegistry.instantiate("flat_grass", "Grass");
         grass.getAsset().setType(AssetType.GRASS);
-        ground = MapLoader.generateMap(0);
+        chunkManager = new ChunkManager(0);
     }
 
     private void generateGrassTransforms() {
@@ -99,10 +100,16 @@ public class PbrTestLauncher implements SceneRenderer {
     }
 
     private void renderObjects() {
+        SimpleCamera3D camera = player.getCamera();
         for (Matrix4f transform : grassTransforms) {
             grass.render(transform, camera, light);
         }
-        ground.render(new Matrix4f().identity(), camera, light);
+        chunkManager.renderAll(camera, light);
+    }
+
+    @Override
+    public void shutdown() {
+        chunkManager.shutdown();
     }
 
     public PbrTestLauncher() {}
