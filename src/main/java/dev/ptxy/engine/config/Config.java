@@ -8,8 +8,11 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.StreamSupport;
 
-public class Config {
+public final class Config {
     private static final JsonObject CONFIG_JSON;
+    private static final TerrainConfig TERRAIN_CONFIG;
+    private static final PlayerConfig PLAYER_CONFIG;
+    private static final BiomeLookUpTable BIOMES_LOOK_UP_TABLE;
 
     static {
         InputStream is = Config.class.getResourceAsStream("/SceneConfig.json");
@@ -22,6 +25,14 @@ public class Config {
         } catch (IOException | JsonParseException e) {
             throw new IllegalStateException("Failed to preload SceneConfig.json", e);
         }
+
+        TERRAIN_CONFIG = TerrainConfig.fromConfig();
+        PLAYER_CONFIG = PlayerConfig.fromConfig();
+        BIOMES_LOOK_UP_TABLE = BiomeLookUpTable.fromConfig();
+    }
+
+    private Config() {
+        throw new IllegalStateException("Utility class");
     }
 
     public static String[] getPreloadAssets() {
@@ -38,47 +49,27 @@ public class Config {
                 .toArray(String[]::new);
     }
 
-    public static Integer getMapConfigSize() {
-        return CONFIG_JSON.getAsJsonObject("mapConfig").get("size").getAsInt();
+    public static JsonObject getTerrainJsonObject() {
+        return CONFIG_JSON.getAsJsonObject("terrain");
     }
 
-    public static Float getMeadowsConfigSharpness() {
-        return CONFIG_JSON
-                .getAsJsonObject("mapConfig")
-                .getAsJsonObject("meadowsConfig")
-                .get("sharpness")
-                .getAsFloat();
+    public static JsonObject getPlayerJsonObject() {
+        return CONFIG_JSON.getAsJsonObject("player");
     }
 
-    public static Integer getMeadowsConfigResolution() {
-        return CONFIG_JSON
-                .getAsJsonObject("mapConfig")
-                .getAsJsonObject("meadowsConfig")
-                .get("resolution")
-                .getAsInt();
+    public static JsonObject getBiomsLookUpTableJsonObject() {
+        return getTerrainJsonObject().getAsJsonObject("biomsLookUpTable");
     }
 
-    public static Float getMeadowsConfigMixStrength() {
-        return CONFIG_JSON
-                .getAsJsonObject("mapConfig")
-                .getAsJsonObject("meadowsConfig")
-                .get("mixStrength")
-                .getAsFloat();
+    public static TerrainConfig getTerrainConfig() {
+        return TERRAIN_CONFIG;
     }
 
-    public static Integer getMeadowsConfigSize() {
-        return CONFIG_JSON
-                .getAsJsonObject("mapConfig")
-                .getAsJsonObject("meadowsConfig")
-                .get("size")
-                .getAsInt();
+    public static PlayerConfig getPlayerConfig() {
+        return PLAYER_CONFIG;
     }
 
-    public static Float getMeadowsConfigTextureNoiseScale() {
-        return CONFIG_JSON
-                .getAsJsonObject("mapConfig")
-                .getAsJsonObject("meadowsConfig")
-                .get("grassTextureNoiseScale")
-                .getAsFloat();
+    public static BiomeLookUpTable getBiomesLookUpTable() {
+        return BIOMES_LOOK_UP_TABLE;
     }
 }

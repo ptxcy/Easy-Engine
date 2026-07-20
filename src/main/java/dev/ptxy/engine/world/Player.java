@@ -24,33 +24,34 @@ public class Player implements WorldPosition {
         log.info("Player spawned at ({}, {}, {})", x, y, z);
     }
 
-    public void update(long windowHandle, float rotateStep) {
+    public void update(long windowHandle, float rotateStep, float deltaTime) {
         float yaw = camera.getYaw();
         float fx = (float) Math.cos(yaw);
         float fz = (float) Math.sin(yaw);
         float rx = -fz;
         float rz = fx;
+        float step = moveStep * deltaTime;
 
         if (glfwGetKey(windowHandle, GLFW_KEY_W) == GLFW_PRESS) {
-            x += fx * moveStep;
-            z += fz * moveStep;
+            x += fx * step;
+            z += fz * step;
         }
         if (glfwGetKey(windowHandle, GLFW_KEY_S) == GLFW_PRESS) {
-            x -= fx * moveStep;
-            z -= fz * moveStep;
+            x -= fx * step;
+            z -= fz * step;
         }
         if (glfwGetKey(windowHandle, GLFW_KEY_A) == GLFW_PRESS) {
-            x -= rx * moveStep;
-            z -= rz * moveStep;
+            x -= rx * step;
+            z -= rz * step;
         }
         if (glfwGetKey(windowHandle, GLFW_KEY_D) == GLFW_PRESS) {
-            x += rx * moveStep;
-            z += rz * moveStep;
+            x += rx * step;
+            z += rz * step;
         }
-        if (glfwGetKey(windowHandle, GLFW_KEY_SPACE) == GLFW_PRESS) y += moveStep;
-        if (glfwGetKey(windowHandle, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) y -= moveStep;
+        if (glfwGetKey(windowHandle, GLFW_KEY_SPACE) == GLFW_PRESS) y += step;
+        if (glfwGetKey(windowHandle, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) y -= step;
 
-        camera.handleInput(windowHandle, moveStep, rotateStep);
+        camera.handleInput(windowHandle, moveStep, rotateStep, deltaTime);
     }
 
     public SimpleCamera3D getCamera() {

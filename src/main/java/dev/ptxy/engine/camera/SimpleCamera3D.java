@@ -48,9 +48,9 @@ public class SimpleCamera3D {
         return attachment == null;
     }
 
-    public void handleInput(long windowHandle, float moveStep, float rotateStep) {
-        if (glfwGetKey(windowHandle, GLFW_KEY_Q) == GLFW_PRESS) rotate(-rotateStep, 0f);
-        if (glfwGetKey(windowHandle, GLFW_KEY_E) == GLFW_PRESS) rotate(rotateStep, 0f);
+    public void handleInput(long windowHandle, float moveStep, float rotateStep, float deltaTime) {
+        if (glfwGetKey(windowHandle, GLFW_KEY_Q) == GLFW_PRESS) rotate(-rotateStep * deltaTime, 0f);
+        if (glfwGetKey(windowHandle, GLFW_KEY_E) == GLFW_PRESS) rotate(rotateStep * deltaTime, 0f);
 
         if (!isFree()) {
             updateView();
@@ -60,19 +60,20 @@ public class SimpleCamera3D {
         Vector3f forward = getForward();
         Vector3f right = getRight();
         Vector3f up = new Vector3f(0, 1, 0);
+        float step = moveStep * deltaTime;
 
         if (glfwGetKey(windowHandle, GLFW_KEY_W) == GLFW_PRESS)
-            position.add(new Vector3f(forward).mul(moveStep));
+            position.add(new Vector3f(forward).mul(step));
         if (glfwGetKey(windowHandle, GLFW_KEY_S) == GLFW_PRESS)
-            position.sub(new Vector3f(forward).mul(moveStep));
+            position.sub(new Vector3f(forward).mul(step));
         if (glfwGetKey(windowHandle, GLFW_KEY_A) == GLFW_PRESS)
-            position.sub(new Vector3f(right).mul(moveStep));
+            position.sub(new Vector3f(right).mul(step));
         if (glfwGetKey(windowHandle, GLFW_KEY_D) == GLFW_PRESS)
-            position.add(new Vector3f(right).mul(moveStep));
+            position.add(new Vector3f(right).mul(step));
         if (glfwGetKey(windowHandle, GLFW_KEY_SPACE) == GLFW_PRESS)
-            position.add(new Vector3f(up).mul(moveStep));
+            position.add(new Vector3f(up).mul(step));
         if (glfwGetKey(windowHandle, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-            position.sub(new Vector3f(up).mul(moveStep));
+            position.sub(new Vector3f(up).mul(step));
 
         updateView();
     }

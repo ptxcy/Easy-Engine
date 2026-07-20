@@ -1,6 +1,8 @@
 package dev.ptxy.engine;
 
 import dev.ptxy.engine.camera.SimpleCamera3D;
+import dev.ptxy.engine.config.Config;
+import dev.ptxy.engine.config.PlayerConfig;
 import dev.ptxy.engine.core.Core;
 import dev.ptxy.engine.core.SceneRenderer;
 import dev.ptxy.engine.light.DirectionalLight;
@@ -20,14 +22,20 @@ import org.lwjgl.glfw.GLFW;
 
 public class PbrTestLauncher implements SceneRenderer {
     private static final Logger log = LogManager.getLogger(PbrTestLauncher.class);
+    private static final PlayerConfig PLAYER_CONFIG = Config.getPlayerConfig();
 
-    private static final float SPEED_STEP = 0.005f;
+    // SPEED_RATE ist eine relative Änderung pro Sekunde (exponentielle Rampe für alle vier
+    // Pfeiltasten einheitlich) -- 1.0f verdoppelt/halbiert moveStep/rotateStep ungefähr alle
+    // 0.7s bei gehaltener Taste.
+    private static final float SPEED_RATE = PLAYER_CONFIG.speedRate();
 
-    private float moveStep = 0.05f;
-    private float rotateStep = (float) Math.toRadians(0.3);
+    private float moveStep = PLAYER_CONFIG.moveStep();
+    private float rotateStep = (float) Math.toRadians(PLAYER_CONFIG.rotateStepDegrees());
 
     private boolean initiated = false;
     private long windowHandle;
+
+    private final boolean[] debugKeyWasDown = new boolean[4];
 
     private final DirectionalLight light =
             new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
@@ -39,7 +47,7 @@ public class PbrTestLauncher implements SceneRenderer {
     private final List<Matrix4f> grassTransforms = new ArrayList<>();
 
     @Override
-    public void renderScene() {
+    public void renderScene(float deltaTime) {
         if (!initiated) {
             initiated = true;
             windowHandle = GLFW.glfwGetCurrentContext();
@@ -51,19 +59,26 @@ public class PbrTestLauncher implements SceneRenderer {
         }
 
         if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
-            moveStep += SPEED_STEP;
+            moveStep *= (1f + SPEED_RATE * deltaTime);
             player.setMoveStep(moveStep);
         }
         if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS) {
-            moveStep *= (1f - SPEED_STEP);
+            moveStep *= (1f - SPEED_RATE * deltaTime);
             player.setMoveStep(moveStep);
         }
         if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_PRESS)
-            rotateStep *= (1f + SPEED_STEP);
+            rotateStep *= (1f + SPEED_RATE * deltaTime);
         if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_PRESS)
-            rotateStep *= (1f - SPEED_STEP);
+            rotateStep *= (1f - SPEED_RATE * deltaTime);
 
-        player.update(windowHandle, rotateStep);
+        int[] debugKeys = {GLFW.GLFW_KEY_1, GLFW.GLFW_KEY_2, GLFW.GLFW_KEY_3, GLFW.GLFW_KEY_4};
+        for (int m = 0; m < debugKeys.length; m++) {
+            boolean down = GLFW.glfwGetKey(windowHandle, debugKeys[m]) == GLFW.GLFW_PRESS;
+            if (down && !debugKeyWasDown[m]) chunkManager.setDebugMode(m);
+            debugKeyWasDown[m] = down;
+        }
+
+        player.update(windowHandle, rotateStep, deltaTime);
         chunkManager.update(player.getX(), player.getZ());
 
         renderObjects();

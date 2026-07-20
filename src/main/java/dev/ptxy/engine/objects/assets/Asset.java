@@ -5,7 +5,6 @@ import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL30.*;
 
 import dev.ptxy.engine.camera.SimpleCamera3D;
-import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.objects.Triangle;
 import dev.ptxy.engine.objects.properties.Material;
@@ -91,35 +90,12 @@ public class Asset {
         setShaderVars(transform, camera, light, shader);
         switch (type) {
             case GRASS -> setGrassShaderVars(shader);
-            case GROUND -> setGroundShaderVars(shader);
             default -> {
                 // Nothing i guess
             }
         }
 
         glUseProgram(0);
-    }
-
-    private void setGroundShaderVars(Integer shader) {
-        if (noiseTexture == null)
-            throw new RuntimeException(
-                    "Noise texture not set but is required for: " + type.name() + " shader");
-        if (baseColors.size() < 3)
-            throw new RuntimeException(
-                    "Basecolor List of Ground Texture is to small: " + baseColors.size());
-        ShaderUtils.setUniformInt(shader, "diffuseTexOne", 0);
-        ShaderUtils.setUniformInt(shader, "diffuseTexTwo", 1);
-        ShaderUtils.setUniformInt(shader, "diffuseTexThree", 2);
-        ShaderUtils.setUniformInt(shader, "noiseTex", 3);
-
-        baseColors.getFirst().bind(0);
-        baseColors.get(1).bind(1);
-        baseColors.get(2).bind(2);
-        noiseTexture.bind(3);
-
-        ShaderUtils.setUniformFloat(shader, "mixStrength", Config.getMeadowsConfigMixStrength());
-        ShaderUtils.setUniformFloat(shader, "terrainSize", Config.getMeadowsConfigSize());
-        ShaderUtils.setUniformFloat(shader, "sharpness", Config.getMeadowsConfigSharpness());
     }
 
     private void setShaderVars(

@@ -17,7 +17,7 @@ import org.lwjgl.system.MemoryStack;
 public final class Core {
     private static final Logger log = LogManager.getLogger(Core.class);
 
-    private Vector4f clearColor = new Vector4f(0f, 0f, 0f, 0f);
+    private Vector4f clearColor = new Vector4f(0.53f, 0.81f, 0.98f, 1f);
 
     public Core() {
         init();
@@ -102,11 +102,16 @@ public final class Core {
 
         long fpsTimer = System.nanoTime();
         int frameCount = 0;
+        double lastFrameTime = glfwGetTime();
 
         while (!glfwWindowShouldClose(GameWindow.getActiveWindow().getWindowHandle())) {
+            double frameTime = glfwGetTime();
+            float deltaTime = (float) (frameTime - lastFrameTime);
+            lastFrameTime = frameTime;
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            sceneRenderer.renderScene();
+            sceneRenderer.renderScene(deltaTime);
 
             glfwSwapBuffers(GameWindow.getActiveWindow().getWindowHandle());
             glfwPollEvents();
