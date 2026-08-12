@@ -4,11 +4,11 @@ layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoords;
 layout(location = 2) in float aTemp;
 layout(location = 3) in float aHumidity;
+layout(location = 4) in float aBiomeCell;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform float heightTempLapse;
 
 out vec3 worldPos;
 out float temp;
@@ -21,13 +21,11 @@ void main() {
     temp = aTemp;
     humidity = aHumidity;
 
-    // Biom-Zelle nutzt die Roh-Temperatur (vor Höhenabzug), sonst hängt die Klassifikation
-    // zusätzlich vom lokalen Terrain-Rauschen ab und Klimazonen wirken zerrissen/überlappend,
-    // obwohl jeder Punkt klimatisch eindeutig einer Zelle zugeordnet ist.
-    float rawTemp = aTemp + worldPos.y * heightTempLapse;
-    int row = int(clamp((rawTemp   + 1.0) / 2.0 * 2.9999, 0.0, 2.0));
-    int col = int(clamp((aHumidity + 1.0) / 2.0 * 2.9999, 0.0, 2.0));
-    vBiomeCell = row * 3 + col;
+    // Kommt direkt von Map.getBiomeCell() (CPU-Seite) statt hier aus Roh-Temperatur/-Feuchte neu
+    // berechnet zu werden -- das respektiert Pool-Clamp und Enabled-Filter (siehe
+    // BiomeLookUpTable.enabled) und stimmt dadurch garantiert mit der Zelle überein, deren
+    // Amplitude/Frequenz/etc. tatsächlich die Höhe an diesem Punkt geformt haben.
+    vBiomeCell = int(aBiomeCell + 0.5);
 
     gl_Position = projection * view * wp;
 }

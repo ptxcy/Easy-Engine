@@ -16,4 +16,8 @@ final class UploadQueue {
             handler.accept(data);
         }
     }
+
+    void clear() {
+        queue.clear();
+    }
 }

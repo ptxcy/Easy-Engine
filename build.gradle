@@ -92,11 +92,14 @@ tasks.register("runEngine", Exec) {
 
     workingDir = layout.buildDirectory.dir("libs").get().asFile
 
+    def sceneConfigSource = layout.projectDirectory.file("src/main/resources/SceneConfig.json").asFile.absolutePath
+
     def cmd = ["java"]
     if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
         cmd += ["-XstartOnFirstThread"]
     }
     cmd += ["--enable-native-access=ALL-UNNAMED"]
+    cmd += ["-Dscene.config.source=" + sceneConfigSource]
     cmd += ["-jar", jar.archiveFile.get().asFile.name]
 
     commandLine(cmd)

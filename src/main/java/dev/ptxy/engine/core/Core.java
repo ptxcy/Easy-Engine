@@ -4,6 +4,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
+import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.shader.ShaderCompiler;
 import java.nio.IntBuffer;
 import org.apache.logging.log4j.LogManager;
@@ -61,7 +62,7 @@ public final class Core {
         // Mac Os hard dependency end
 
         t = System.nanoTime();
-        GameWindow.createWindowFromSystemProperties();
+        GameWindow.createWindowFromConfig();
         log.debug("Window created in {}ms", elapsed(t));
 
         try (MemoryStack stack = stackPush()) {
@@ -76,8 +77,7 @@ public final class Core {
         }
 
         glfwMakeContextCurrent(GameWindow.getActiveWindow().getWindowHandle());
-        // glfwSwapInterval(1); // vsync an
-        glfwSwapInterval(0); // vsync aus
+        glfwSwapInterval(Config.getWindowConfig().vsync() ? 1 : 0);
         glfwShowWindow(GameWindow.getActiveWindow().getWindowHandle());
         glfwFocusWindow(GameWindow.getActiveWindow().getWindowHandle());
 
@@ -114,12 +114,15 @@ public final class Core {
             sceneRenderer.renderScene(deltaTime);
 
             glfwSwapBuffers(GameWindow.getActiveWindow().getWindowHandle());
+
+            sceneRenderer.beforePollEvents();
             glfwPollEvents();
+            sceneRenderer.afterPollEvents();
 
             frameCount++;
             long now = System.nanoTime();
             if (now - fpsTimer >= 1_000_000_000L) {
-                log.debug("FPS: {}", frameCount);
+                sceneRenderer.onFps(frameCount);
                 frameCount = 0;
                 fpsTimer = now;
             }

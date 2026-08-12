@@ -5,6 +5,8 @@ import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import dev.ptxy.engine.config.Config;
+import dev.ptxy.engine.config.WindowConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,20 +50,21 @@ public final class GameWindow {
         currentActiveWindow = new GameWindow(width, height, title, monitor, share);
     }
 
-    public static void createWindowFromSystemProperties() {
+    public static void createWindowFromConfig() {
         if (currentActiveWindow != null) {
             log.debug("Destroying existing window before recreation");
             glfwFreeCallbacks(GameWindow.getActiveWindow().getWindowHandle());
             glfwDestroyWindow(GameWindow.getActiveWindow().getWindowHandle());
         }
 
-        int width = Integer.parseInt(System.getProperty("WIDTH", "1080"));
-        int height = Integer.parseInt(System.getProperty("WIDTH", "1920"));
-        String title = System.getProperty("WINDOW_TITLE", "Game");
+        WindowConfig windowConfig = Config.getWindowConfig();
+        int width = windowConfig.width();
+        int height = windowConfig.height();
+        String title = windowConfig.title();
         long monitor = Long.parseLong(System.getProperty("WINDOW_MONITOR", "0"));
         long share = Long.parseLong(System.getProperty("WINDOW_SHARE", "0"));
 
-        log.debug("Creating window from system properties — {}x{} \"{}\"", width, height, title);
+        log.debug("Creating window from config — {}x{} \"{}\"", width, height, title);
         currentActiveWindow = new GameWindow(width, height, title, monitor, share);
     }
 

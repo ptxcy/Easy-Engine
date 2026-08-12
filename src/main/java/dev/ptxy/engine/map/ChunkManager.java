@@ -37,11 +37,15 @@ public final class ChunkManager {
     private static final int CHUNK_SIZE = TERRAIN.chunkSize();
     private static final int CHUNK_RESOLUTION = TERRAIN.chunkResolution();
     private static final int RENDER_DISTANCE = TERRAIN.renderDistance();
-    private static final float HEIGHT_AMPLITUDE = TERRAIN.heightAmplitude();
     private static final int WORKER_THREADS = TERRAIN.workerThreads();
 
     private static final int VERTS_PER_SIDE = CHUNK_RESOLUTION + 1;
-    private static final int VERTEX_FLOATS = 7; // pos(3) + uv(2) + temp(1) + humidity(1)
+    // pos(3) + uv(2) + temp(1) + humidity(1) + biomeCell(1) -- biomeCell kommt direkt aus
+    // Map.getBiomeCell() (CPU-seitig, respektiert Pool-Clamp + Enabled-Filter), nicht mehr im
+    // Shader aus Roh-Temperatur/-Feuchte neu berechnet -- sonst weicht die Debug-Einfärbung
+    // (debugMode 3) von der tatsächlich verwendeten Zelle ab, sobald deaktivierte Zellen im Spiel
+    // sind (siehe BiomeLookUpTable.enabled).
+    private static final int VERTEX_FLOATS = 8;
     private static final int[] SHARED_INDICES = buildSharedIndices();
 
     private final Map noiseMap;
@@ -54,6 +58,11 @@ public final class ChunkManager {
 
     private int debugMode = 0;
     private int sharedIndexBuffer = 0;
+
+    // Wird bei jedem regenerate() erhöht und in jeden Build-Task hineinkopiert; Ergebnisse
+    // aus einer älteren Epoche werden beim Draining verworfen, damit nach einer Parameter-
+    // Änderung keine Chunks mit den alten Werten aufblitzen (siehe regenerate()).
+    private int generation = 0;
 
     private final FrustumIntersection frustum = new FrustumIntersection();
     private final Matrix4f vpMatrix = new Matrix4f();
@@ -79,23 +88,54 @@ public final class ChunkManager {
             }
         }
 
+        // Nach dem Distance^2 zum Spieler sortiert einreihen (statt in Rasterreihenfolge ab der
+        // -RENDER_DISTANCE-Ecke): der FixedThreadPool arbeitet seine Warteschlange FIFO ab, damit
+        // füllt sich die Umgebung des Spielers zuerst -- besonders nach regenerate() sonst
+        // sichtbare Löcher rund um den Spieler, während irgendwo am Rand gebaut wird.
+        java.util.List<ChunkPos> missing = new java.util.ArrayList<>();
         for (int dx = -RENDER_DISTANCE; dx <= RENDER_DISTANCE; dx++) {
             for (int dz = -RENDER_DISTANCE; dz <= RENDER_DISTANCE; dz++) {
                 ChunkPos pos = new ChunkPos(cx + dx, cz + dz);
-                if (!loadedChunks.containsKey(pos) && pendingChunks.add(pos)) {
-                    workerPool.submit(() -> buildAndEnqueue(pos));
+                if (!loadedChunks.containsKey(pos) && !pendingChunks.contains(pos)) {
+                    missing.add(pos);
                 }
+            }
+        }
+        missing.sort(
+                java.util.Comparator.comparingInt(
+                        pos -> (pos.x() - cx) * (pos.x() - cx) + (pos.z() - cz) * (pos.z() - cz)));
+        for (ChunkPos pos : missing) {
+            if (pendingChunks.add(pos)) {
+                int taskGeneration = generation;
+                workerPool.submit(() -> buildAndEnqueue(pos, taskGeneration));
             }
         }
 
         uploadQueue.drainTo(
                 data -> {
+                    if (data.generation() != generation) return; // aus alter Epoche, verwerfen
                     if (pendingChunks.contains(data.pos())) {
                         TerrainChunk old = loadedChunks.put(data.pos(), upload(data));
                         if (old != null) old.cleanup();
                     }
                     pendingChunks.remove(data.pos());
                 });
+    }
+
+    // Verwirft alle geladenen/anstehenden Chunks und lässt sie beim nächsten update() mit den
+    // aktuellen TerrainParams/BiomeLookUpTable-Werten neu bauen. Muss auf dem GL-Thread laufen
+    // (löscht VAO/VBO). sharedIndexBuffer bleibt bestehen, da sich die Chunk-Topologie
+    // (CHUNK_RESOLUTION) nicht ändert -- nur die Vertex-Höhen tun das.
+    public void regenerate() {
+        generation++;
+        pendingChunks.clear();
+        uploadQueue.clear();
+        loadedChunks.values().forEach(TerrainChunk::cleanup);
+        loadedChunks.clear();
+    }
+
+    public Map getNoiseMap() {
+        return noiseMap;
     }
 
     public void renderAll(SimpleCamera3D camera, DirectionalLight light) {
@@ -107,24 +147,19 @@ public final class ChunkManager {
         ShaderUtils.setUniformVec3(shader, "lightDir", light.getDirection());
         ShaderUtils.setUniformVec3(shader, "lightColor", light.getColor());
         ShaderUtils.setUniformFloat(shader, "ao", 1.0f);
-        ShaderUtils.setUniformFloat(shader, "heightTempLapse", (float) Map.HEIGHT_TEMP_LAPSE);
         ShaderUtils.setUniformInt(shader, "debugMode", debugMode);
         ShaderUtils.setUniformMat4(shader, "model", new Matrix4f());
 
         camera.getProjection().mul(camera.getViewMatrix(), vpMatrix);
         frustum.set(vpMatrix);
 
+        float heightAmplitude = heightAmplitude();
         for (var entry : loadedChunks.entrySet()) {
             ChunkPos pos = entry.getKey();
             float wx = pos.x() * CHUNK_SIZE;
             float wz = pos.z() * CHUNK_SIZE;
             if (!frustum.testAab(
-                    wx,
-                    -HEIGHT_AMPLITUDE,
-                    wz,
-                    wx + CHUNK_SIZE,
-                    HEIGHT_AMPLITUDE,
-                    wz + CHUNK_SIZE)) {
+                    wx, -heightAmplitude, wz, wx + CHUNK_SIZE, heightAmplitude, wz + CHUNK_SIZE)) {
                 continue;
             }
             entry.getValue().draw();
@@ -147,8 +182,8 @@ public final class ChunkManager {
         }
     }
 
-    private void buildAndEnqueue(ChunkPos pos) {
-        uploadQueue.enqueue(new ChunkMeshData(pos, buildVertices(pos)));
+    private void buildAndEnqueue(ChunkPos pos, int taskGeneration) {
+        uploadQueue.enqueue(new ChunkMeshData(pos, buildVertices(pos), taskGeneration));
     }
 
     private float[] buildVertices(ChunkPos pos) {
@@ -168,7 +203,9 @@ public final class ChunkManager {
                 float hu = humidity(wx, wz);
                 float u = (float) x / CHUNK_RESOLUTION;
                 float v = (float) z / CHUNK_RESOLUTION;
-                i = vert(buf, i, wx, h, wz, u, v, t, hu);
+                int[] cell = noiseMap.getBiomeCell(wx, wz);
+                float biomeCell = cell[0] * 3 + cell[1];
+                i = vert(buf, i, wx, h, wz, u, v, t, hu, biomeCell);
             }
         }
         return buf;
@@ -197,7 +234,11 @@ public final class ChunkManager {
     }
 
     private float height(float wx, float wz) {
-        return (float) noiseMap.getHeight(wx, wz) * HEIGHT_AMPLITUDE;
+        return (float) noiseMap.getHeight(wx, wz) * heightAmplitude();
+    }
+
+    private float heightAmplitude() {
+        return Config.getTerrainParams().heightAmplitude();
     }
 
     private float temp(float wx, float wz, float height) {
@@ -209,7 +250,16 @@ public final class ChunkManager {
     }
 
     private int vert(
-            float[] buf, int i, float x, float y, float z, float u, float v, float t, float h) {
+            float[] buf,
+            int i,
+            float x,
+            float y,
+            float z,
+            float u,
+            float v,
+            float t,
+            float h,
+            float biomeCell) {
         buf[i++] = x;
         buf[i++] = y;
         buf[i++] = z;
@@ -217,6 +267,7 @@ public final class ChunkManager {
         buf[i++] = v;
         buf[i++] = t;
         buf[i++] = h;
+        buf[i++] = biomeCell;
         return i;
     }
 
@@ -246,6 +297,8 @@ public final class ChunkManager {
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(3, 1, GL_FLOAT, false, stride, 6L * Float.BYTES);
         glEnableVertexAttribArray(3);
+        glVertexAttribPointer(4, 1, GL_FLOAT, false, stride, 7L * Float.BYTES);
+        glEnableVertexAttribArray(4);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sharedIndexBuffer);
 

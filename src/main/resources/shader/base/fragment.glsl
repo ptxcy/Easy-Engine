@@ -13,17 +13,14 @@ uniform int debugMode;
 out vec4 fragColor;
 
 vec3 biomeCellColor(int cell) {
-    // Kalt → eher blass/bläulich-grau, warm → eher orange/rötlich; trocken → gelb/tan,
-    // feucht → grün, damit die 3×3-Struktur (Temp-Reihe × Feuchte-Spalte) klar erkennbar bleibt.
-    if (cell == 0) return vec3(0.82, 0.80, 0.72); // kalt-trocken   → Tundra/Steppe
-    if (cell == 1) return vec3(0.55, 0.68, 0.52); // kalt-mittel    → kühles Grasland
-    if (cell == 2) return vec3(0.13, 0.36, 0.34); // kalt-feucht    → Borealer Wald (Taiga)
-    if (cell == 3) return vec3(0.80, 0.72, 0.45); // mittel-trocken → Halbwüste/Steppe
-    if (cell == 4) return vec3(0.68, 0.70, 0.32); // mittel-mittel  → Savanne/Präriegrasland
-    if (cell == 5) return vec3(0.20, 0.55, 0.25); // mittel-feucht  → Laubwald
-    if (cell == 6) return vec3(0.95, 0.62, 0.25); // warm-trocken   → heiße Wüste
-    if (cell == 7) return vec3(0.75, 0.48, 0.20); // warm-mittel    → Buschland/Chaparral
-                   return vec3(0.05, 0.33, 0.12); // warm-feucht    → Regenwald
+    // Nur die 3 aktivierten Zellen (Scope-Entscheidung 2026-08-06, siehe SceneConfig.json
+    // "enabled") bekommen kräftige, klar unterscheidbare Farben -- alle anderen, nicht designten
+    // Zellen einheitlich neutral-grau. So ist auf einen Blick erkennbar, ob man gerade eine der 3
+    // echten Zellen sieht oder (z.B. beim isolierten Testen im Editor) eine Platzhalter-Zelle.
+    if (cell == 0) return vec3(0.90, 0.90, 0.95); // Tundra/Steppe (aktiv)          -- helles Weiß
+    if (cell == 4) return vec3(0.95, 0.75, 0.20); // mittlere Zelle (aktiv)         -- kräftiges Gold
+    if (cell == 8) return vec3(0.05, 0.55, 0.15); // Regenwald (aktiv)              -- kräftiges Grün
+                   return vec3(0.40, 0.40, 0.40); // restliche 6 Zellen, nicht designt
 }
 
 void main() {

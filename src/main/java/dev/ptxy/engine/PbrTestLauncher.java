@@ -11,6 +11,7 @@ import dev.ptxy.engine.objects.MovementUtility;
 import dev.ptxy.engine.objects.SceneNode;
 import dev.ptxy.engine.objects.assets.AssetType;
 import dev.ptxy.engine.objects.assets.SceneNodeRegistry;
+import dev.ptxy.engine.ui.TerrainEditorGui;
 import dev.ptxy.engine.world.Player;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +37,15 @@ public class PbrTestLauncher implements SceneRenderer {
     private long windowHandle;
 
     private final boolean[] debugKeyWasDown = new boolean[4];
+    private boolean editorToggleKeyWasDown = false;
+    private boolean infoToggleKeyWasDown = false;
 
     private final DirectionalLight light =
             new DirectionalLight(new Vector3f(0f, -1f, 0f), new Vector3f(1.0f, 0.95f, 0.8f));
 
     private Player player;
     private ChunkManager chunkManager;
+    private TerrainEditorGui editor;
     private SceneNode grass;
 
     private final List<Matrix4f> grassTransforms = new ArrayList<>();
@@ -56,32 +60,63 @@ public class PbrTestLauncher implements SceneRenderer {
             player = new Player(0f, 0f, 5f, moveStep, camera);
             instanceObjects();
             generateGrassTransforms();
+            editor = new TerrainEditorGui(windowHandle, chunkManager, player);
         }
 
-        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
-            moveStep *= (1f + SPEED_RATE * deltaTime);
-            player.setMoveStep(moveStep);
-        }
-        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS) {
-            moveStep *= (1f - SPEED_RATE * deltaTime);
-            player.setMoveStep(moveStep);
-        }
-        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_PRESS)
-            rotateStep *= (1f + SPEED_RATE * deltaTime);
-        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_PRESS)
-            rotateStep *= (1f - SPEED_RATE * deltaTime);
+        boolean editorToggleKeyDown =
+                GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_P) == GLFW.GLFW_PRESS;
+        if (editorToggleKeyDown && !editorToggleKeyWasDown) editor.setOpen(!editor.isOpen());
+        editorToggleKeyWasDown = editorToggleKeyDown;
 
-        int[] debugKeys = {GLFW.GLFW_KEY_1, GLFW.GLFW_KEY_2, GLFW.GLFW_KEY_3, GLFW.GLFW_KEY_4};
-        for (int m = 0; m < debugKeys.length; m++) {
-            boolean down = GLFW.glfwGetKey(windowHandle, debugKeys[m]) == GLFW.GLFW_PRESS;
-            if (down && !debugKeyWasDown[m]) chunkManager.setDebugMode(m);
-            debugKeyWasDown[m] = down;
+        boolean infoToggleKeyDown =
+                GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_I) == GLFW.GLFW_PRESS;
+        if (infoToggleKeyDown && !infoToggleKeyWasDown) editor.setInfoOpen(!editor.isInfoOpen());
+        infoToggleKeyWasDown = infoToggleKeyDown;
+
+        // Solange der Editor offen ist, geht Tastatur-Input ans Panel statt an Kamera/Debug-
+        // Modi (sonst würde z.B. Tippen in ein Zahlenfeld gleichzeitig den Spieler bewegen).
+        if (!editor.isOpen()) {
+            if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
+                moveStep *= (1f + SPEED_RATE * deltaTime);
+                player.setMoveStep(moveStep);
+            }
+            if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS) {
+                moveStep *= (1f - SPEED_RATE * deltaTime);
+                player.setMoveStep(moveStep);
+            }
+            if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_PRESS)
+                rotateStep *= (1f + SPEED_RATE * deltaTime);
+            if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_PRESS)
+                rotateStep *= (1f - SPEED_RATE * deltaTime);
+
+            int[] debugKeys = {GLFW.GLFW_KEY_1, GLFW.GLFW_KEY_2, GLFW.GLFW_KEY_3, GLFW.GLFW_KEY_4};
+            for (int m = 0; m < debugKeys.length; m++) {
+                boolean down = GLFW.glfwGetKey(windowHandle, debugKeys[m]) == GLFW.GLFW_PRESS;
+                if (down && !debugKeyWasDown[m]) chunkManager.setDebugMode(m);
+                debugKeyWasDown[m] = down;
+            }
+
+            player.update(windowHandle, rotateStep, deltaTime);
         }
 
-        player.update(windowHandle, rotateStep, deltaTime);
         chunkManager.update(player.getX(), player.getZ());
 
         renderObjects();
+    }
+
+    @Override
+    public void beforePollEvents() {
+        if (editor != null) editor.beginInput();
+    }
+
+    @Override
+    public void afterPollEvents() {
+        if (editor != null) editor.endInput();
+    }
+
+    @Override
+    public void onFps(int fps) {
+        if (editor != null) editor.setFps(fps);
     }
 
     private void instanceObjects() {
@@ -120,10 +155,12 @@ public class PbrTestLauncher implements SceneRenderer {
             grass.render(transform, camera, light);
         }
         chunkManager.renderAll(camera, light);
+        editor.render();
     }
 
     @Override
     public void shutdown() {
+        editor.shutdown();
         chunkManager.shutdown();
     }
 
