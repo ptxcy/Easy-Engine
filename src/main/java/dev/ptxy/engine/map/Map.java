@@ -142,6 +142,25 @@ public final class Map {
         return shaped * amp;
     }
 
+    // Ab welcher Weltraum-Höhe (Meter, nach heightAmplitude-Skalierung) ein Punkt unabhängig von
+    // Temperatur/Feuchte als Alpin/Gebirge klassifiziert wird -- orientiert an der Höhenfärbung
+    // im Fragment-Shader (fragment.glsl:41-47): dort ist ab h=worldPos.y/80.0 >= 0.62 die
+    // Gipfel-Grau-Farbe voll erreicht (smoothstep(0.56, 0.62, h)), also 0.62 * 80.0 = 49.6.
+    private static final double ALPINE_HEIGHT_THRESHOLD = 49.6;
+
+    // Biom-Klassifikation inkl. Höhen-Override: Alpin hat bewusst KEINEN eigenen Eintrag in der
+    // BiomeLookUpTable -- die Höhe selbst kommt unverändert aus der normalen Generierung
+    // (getHeight(), inkl. Zellen-Blending). Erst das FERTIGE Ergebnis wird gegen den Höhen-
+    // Threshold geprüft; nur die Klassifikation (nicht die Geländeform) weicht dann auf Alpin aus.
+    public Biome getBiome(double x, double z) {
+        double worldHeight = getHeight(x, z) * Config.getTerrainParams().heightAmplitude();
+        if (worldHeight >= ALPINE_HEIGHT_THRESHOLD) {
+            return Biome.ALPINE;
+        }
+        int[] cell = getBiomeCell(x, z);
+        return Biome.fromCell(cell[0], cell[1]);
+    }
+
     // Welche der 9 Tabellenzellen an diesem Punkt tatsächlich gerendert wird (nach Pool-Clamping
     // und Enabled-Filter) -- für Anzeige/UI, nicht für die Höhenberechnung selbst (die
     // interpoliert stetig statt zu runden).
