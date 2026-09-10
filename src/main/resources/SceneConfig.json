@@ -1,11 +1,11 @@
 {
   "preloadAssets": [
-    "pixel_grass.gltf",
     "grass_ground_ref.gltf"
   ],
   "preloadShaders": [
-    "shader/grass",
-    "shader/base"
+    "shader/base",
+    "shader/vegetation",
+    "shader/tree"
   ],
   "window": {
     "title": "Game",
@@ -14,10 +14,13 @@
     "vsync": false
   },
   "terrain": {
+    "scaleInfo": "Konvention: 1 Welteinheit = 1 Meter (Spieler hat kein explizites Höhenmaß im Code, dient nur als gedankliche Referenz). heightAmplitude ist der EINZIGE globale Höhen-Hebel -- Biom-amplitude/frequency/... bleiben unverändert, nur dieser Wert skaliert alles gemeinsam. Zusammenhang mit ALPINE_HEIGHT_THRESHOLD (Map.java) und der Höhenfärbung (shader/base/fragment.glsl) folgt automatisch (beide werden aus heightAmplitude abgeleitet, nicht mehr hartkodiert) -- Änderungen hier brauchen also KEINE Anpassung an anderer Stelle. Vegetations-Größen (vegetation.types.*.scale) unabhängig kalibriert, siehe deren eigene Werte.",
     "chunkSize": 64,
     "chunkResolution": 64,
     "renderDistance": 64,
-    "heightAmplitude": 70.0,
+    "heightAmplitude": 100.0,
+    "worldMaxHeightMetersInfo": "Fester Weltmaßstab für die Höhenfärbung (Boden/Fels/Schnee in shader/base/fragment.glsl) -- 0m Talboden bis zu diesem Wert, EINHEITLICH für alle Biome (nicht mehr pro Biom relativ, das verursachte Schnee auf niedrigen Hügeln und harte Farbsprünge an Biomgrenzen). Design-Vorgabe, kein automatisch abgeleiteter Wert: amplitude*heightAmplitude aller aktivierten Biome MUSS darunter bleiben, sonst clippt die Färbung oben (Warnung beim Start, siehe BiomeLookUpTable).",
+    "worldMaxHeightMeters": 1000.0,
     "workerThreads": 6,
     "noise": {
       "heightOctaves": 5,
@@ -30,7 +33,7 @@
       "info": "row \u003d temp (kalt/mittel/warm) / column \u003d humidity (trocken/mittel/feucht) -\u003e 2D graph. Aktiv (Scope-Entscheidung 2026-08-06, siehe arbeit.tex TODOs): [0][0] Tundra/Steppe, [1][1] Savanne/Praeriegrasland (Baseline), [2][2] Regenwald. Restliche Zellen sind neutrale Platzhalter, siehe \u0027enabled\u0027.",
       "amplitude": [
         [
-          3.0,
+          10.0,
           0.3,
           0.3
         ],
@@ -47,7 +50,7 @@
       ],
       "frequency": [
         [
-          0.15,
+          0.05,
           1.0,
           1.0
         ],
@@ -130,6 +133,24 @@
           4.0
         ]
       ],
+      "targetAreaPercentInfo": "FA4: erzwungener Flächenanteil je AKTIVIERTER Zelle (muss sich zu 100 summieren, siehe BiomeLookUpTable.validateTargetAreaPercent). Werte bei nicht aktivierten Zellen sind ohne Wirkung. Bewusst von der 'natürlichen' Verteilung unter reinem Rauschen abweichend gewählt (Savanne war bisher die klimatische Mitte und damit natürlich dominant) -- Map.calibrateActiveCellPositions() verschiebt dafür die Zellen-Position im Klimaraum, nicht ihre Form-Parameter.",
+      "targetAreaPercent": [
+        [
+          15.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          25.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          60.0
+        ]
+      ],
       "enabled": [
         [
           true,
@@ -147,6 +168,40 @@
           true
         ]
       ]
+    },
+    "vegetation": {
+      "info": "gridDensity = Nodes pro Chunk-Seite (density x density Gitter, Zellmitten -- keine doppelte Platzierung an Chunk-Grenzen). renderDistance (Chunks um den Spieler) ist bewusst viel kleiner als terrain.renderDistance -- einzelne Halme sind auf Terrain-Sichtweite (hier 64!) längst nicht mehr wahrnehmbar, kosten dort aber vollen Draw-Call + GPU-Instancing-Overhead pro Chunk. Pro Vegetations-Typ eine coveragePercent-Tabelle (0-100) je Biome-Enum-Name; fehlende Biome = 0 (nicht designt).",
+      "gridDensity": 256,
+      "renderDistance": 10,
+      "types": {
+        "grass": {
+          "coveragePercent": {
+            "TUNDRA_STEPPE": 5,
+            "SAVANNA_PRAIRIE": 5,
+            "RAINFOREST": 45,
+            "ALPINE": 5
+          },
+          "scale": {
+            "widthMin": 0.05,
+            "widthMax": 0.08,
+            "heightMin": 0.35,
+            "heightMax": 0.7
+          }
+        },
+        "tree": {
+          "coveragePercent": {
+            "TUNDRA_STEPPE": 0.05,
+            "SAVANNA_PRAIRIE": 0.15,
+            "RAINFOREST": 0.6
+          },
+          "scale": {
+            "heightMin": 5.0,
+            "heightMax": 9.0,
+            "radiusMin": 1.4,
+            "radiusMax": 2.2
+          }
+        }
+      }
     }
   },
   "player": {

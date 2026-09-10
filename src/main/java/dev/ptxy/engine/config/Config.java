@@ -18,6 +18,7 @@ public final class Config {
     private static final PlayerConfig PLAYER_CONFIG;
     private static final BiomeLookUpTable BIOMES_LOOK_UP_TABLE;
     private static final TerrainParams TERRAIN_PARAMS;
+    private static final VegetationConfig VEGETATION_CONFIG;
 
     static {
         InputStream is = Config.class.getResourceAsStream("/SceneConfig.json");
@@ -36,6 +37,7 @@ public final class Config {
         PLAYER_CONFIG = PlayerConfig.fromConfig();
         BIOMES_LOOK_UP_TABLE = BiomeLookUpTable.fromConfig();
         TERRAIN_PARAMS = TerrainParams.fromTerrainConfig(TERRAIN_CONFIG);
+        VEGETATION_CONFIG = VegetationConfig.fromConfig();
     }
 
     private Config() {
@@ -86,6 +88,10 @@ public final class Config {
 
     public static BiomeLookUpTable getBiomesLookUpTable() {
         return BIOMES_LOOK_UP_TABLE;
+    }
+
+    public static VegetationConfig getVegetationConfig() {
+        return VEGETATION_CONFIG;
     }
 
     // Mutable Live-Parameter -- Map/ChunkManager lesen dieselbe Instanz, die der Editor

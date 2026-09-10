@@ -437,6 +437,16 @@ public final class TerrainEditorGui {
                                         + " Biom-Tabelle (Richtung Zeile 0).",
                                 params.heightTempLapse()));
 
+                sectionDivider();
+                nk_layout_row_dynamic(ctx, 24, 1);
+                try (MemoryStack vegStack = stackPush()) {
+                    ByteBuffer vegetationActive =
+                            vegStack.bytes((byte) (chunkManager.isVegetationEnabled() ? 1 : 0));
+                    if (nk_checkbox_label(ctx, "Vegetation rendern", vegetationActive)) {
+                        chunkManager.setVegetationEnabled(vegetationActive.get(0) != 0);
+                    }
+                }
+
                 nk_layout_row_dynamic(ctx, 30, 1);
                 if (nk_button_label(ctx, "REGENERATE")) {
                     chunkManager.regenerate();
