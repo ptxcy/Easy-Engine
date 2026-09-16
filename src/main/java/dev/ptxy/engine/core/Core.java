@@ -18,14 +18,10 @@ import org.lwjgl.system.MemoryStack;
 public final class Core {
     private static final Logger log = LogManager.getLogger(Core.class);
 
-    private Vector4f clearColor = new Vector4f(0.53f, 0.81f, 0.98f, 1f);
+    private final Vector4f clearColor = new Vector4f(0.53f, 0.81f, 0.98f, 1f);
 
     public Core() {
         init();
-    }
-
-    public void changeClearColor(Vector4f color) {
-        this.clearColor = color;
     }
 
     public void run(SceneRenderer sceneRenderer) {
@@ -54,12 +50,11 @@ public final class Core {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        // Mac Os hard dependency start
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        // Mac Os hard dependency end
+        glfwWindowHint(GLFW_SAMPLES, 4);
 
         t = System.nanoTime();
         GameWindow.createWindowFromConfig();
@@ -90,13 +85,13 @@ public final class Core {
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+        glEnable(GL_MULTISAMPLE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-        ShaderCompiler.preloadConfiguredShaders(
-                "shader/base/vertex.glsl", "shader/base/fragment.glsl");
+        ShaderCompiler.preloadConfiguredShaders();
 
         log.info("OpenGL context ready in {}ms — entering game loop", elapsed(glStart));
 

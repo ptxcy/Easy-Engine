@@ -3,6 +3,7 @@ package dev.ptxy.engine.camera;
 import static org.lwjgl.glfw.GLFW.*;
 
 import dev.ptxy.engine.world.WorldPosition;
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
@@ -11,11 +12,18 @@ import org.joml.Vector3f;
 public class SimpleCamera3D {
     private static final Logger log = LogManager.getLogger(SimpleCamera3D.class);
 
+    private static final float ROTATION_REST_THRESHOLD = 0.05f;
+    private static final float ROTATION_REST_TIME = 0.25f;
+
     private final Matrix4f projection;
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Vector3f position = new Vector3f(0, 0, 5);
-    private float yaw = (float) -Math.PI / 2;
+
+    @Getter private float yaw = (float) -Math.PI / 2;
+
     private float pitch = 0f;
+    @Getter private boolean rotating = false;
+    private float rotationRestTimer = 0f;
 
     private WorldPosition attachment = null;
 
@@ -32,50 +40,25 @@ public class SimpleCamera3D {
         updateView();
     }
 
-    public void detach() {
-        if (attachment != null) {
-            position.set(attachment.getX(), attachment.getY(), attachment.getZ());
-            log.info(
-                    "Camera detached — free mode at ({}, {}, {})",
-                    position.x,
-                    position.y,
-                    position.z);
-        }
-        attachment = null;
-    }
-
-    public boolean isFree() {
-        return attachment == null;
-    }
-
-    public void handleInput(long windowHandle, float moveStep, float rotateStep, float deltaTime) {
+    public void handleInput(long windowHandle, float rotateStep, float deltaTime) {
+        float previousYaw = yaw;
         if (glfwGetKey(windowHandle, GLFW_KEY_Q) == GLFW_PRESS) rotate(-rotateStep * deltaTime, 0f);
         if (glfwGetKey(windowHandle, GLFW_KEY_E) == GLFW_PRESS) rotate(rotateStep * deltaTime, 0f);
+        updateView();
+        updateRotationState(previousYaw, deltaTime);
+    }
 
-        if (!isFree()) {
-            updateView();
+    private void updateRotationState(float previousYaw, float deltaTime) {
+        if (deltaTime <= 0f) return;
+        if (Math.abs(yaw - previousYaw) / deltaTime > ROTATION_REST_THRESHOLD) {
+            rotating = true;
+            rotationRestTimer = 0f;
             return;
         }
-
-        Vector3f forward = getForward();
-        Vector3f right = getRight();
-        Vector3f up = new Vector3f(0, 1, 0);
-        float step = moveStep * deltaTime;
-
-        if (glfwGetKey(windowHandle, GLFW_KEY_W) == GLFW_PRESS)
-            position.add(new Vector3f(forward).mul(step));
-        if (glfwGetKey(windowHandle, GLFW_KEY_S) == GLFW_PRESS)
-            position.sub(new Vector3f(forward).mul(step));
-        if (glfwGetKey(windowHandle, GLFW_KEY_A) == GLFW_PRESS)
-            position.sub(new Vector3f(right).mul(step));
-        if (glfwGetKey(windowHandle, GLFW_KEY_D) == GLFW_PRESS)
-            position.add(new Vector3f(right).mul(step));
-        if (glfwGetKey(windowHandle, GLFW_KEY_SPACE) == GLFW_PRESS)
-            position.add(new Vector3f(up).mul(step));
-        if (glfwGetKey(windowHandle, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-            position.sub(new Vector3f(up).mul(step));
-
-        updateView();
+        rotationRestTimer += deltaTime;
+        if (rotationRestTimer >= ROTATION_REST_TIME) {
+            rotating = false;
+        }
     }
 
     public void rotate(float deltaYaw, float deltaPitch) {
@@ -106,19 +89,6 @@ public class SimpleCamera3D {
                         (float) Math.sin(pitch),
                         (float) (Math.cos(pitch) * Math.sin(yaw)))
                 .normalize();
-    }
-
-    public Vector3f getRight() {
-        return getForward().cross(new Vector3f(0, 1, 0), new Vector3f()).normalize();
-    }
-
-    public float getYaw() {
-        return yaw;
-    }
-
-    public void setPosition(Vector3f pos) {
-        position.set(pos);
-        updateView();
     }
 
     public Vector3f getPosition() {

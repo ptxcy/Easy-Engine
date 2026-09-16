@@ -11,6 +11,7 @@ import dev.ptxy.engine.config.BiomeLookUpTable;
 import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.config.TerrainParams;
 import dev.ptxy.engine.map.ChunkManager;
+import dev.ptxy.engine.map.VegetationController;
 import dev.ptxy.engine.world.Player;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,8 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
+import lombok.Getter;
+import lombok.Setter;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.nuklear.NkAllocator;
 import org.lwjgl.nuklear.NkBuffer;
@@ -37,23 +40,6 @@ import org.lwjgl.stb.STBTTPackContext;
 import org.lwjgl.stb.STBTTPackedchar;
 import org.lwjgl.system.MemoryStack;
 
-/*
- * In-App-Editor fürs Terrain-Tuning (Roadmap-Schritt 3): Panel mit den 4 fBm-Parametern der
- * gerade ausgewählten Biom-Zelle (Amplitude/Frequenz/Persistence/Lacunarity), globalen Werten
- * und einem Regenerieren-Button -- kein App-Neustart mehr nötig, um Terrain-Parameter zu testen.
- *
- * Nuklear-GLFW/GL3-Backend portiert von der offiziellen LWJGL-Demo
- * (org.lwjgl.demo.nuklear.GLFWDemo). Font ist Fira Sans (SIL Open Font License, siehe
- * resources/font/FiraSans-OFL.txt).
- *
- * Aufrufer (PbrTestLauncher) muss:
- *   - beginInput()/endInput() exakt um Cores glfwPollEvents() legen (SceneRenderer-Hooks)
- *   - render() nach dem 3D-Scene-Rendering, vor glfwSwapBuffers aufrufen
- *   - shutdown() beim Beenden aufrufen
- * WICHTIG: render() verändert globalen GL-State (Blend/Cull/Depth/Scissor) und stellt am Ende
- * exakt den Zustand wieder her, den Core.java beim Start setzt -- sonst ist die 3D-Szene ab dem
- * nächsten Frame falsch gerendert (kein Depth-Test/Culling mehr).
- */
 public final class TerrainEditorGui {
     private static final int BUFFER_INITIAL_SIZE = 4 * 1024;
     private static final int MAX_VERTEX_BUFFER = 512 * 1024;
@@ -106,24 +92,16 @@ public final class TerrainEditorGui {
     private int displayWidth;
     private int displayHeight;
 
-    private boolean open = false;
-    private boolean infoOpen = true;
-    private int fps = 0;
+    @Getter @Setter private boolean open = false;
+
+    @Getter @Setter private boolean infoOpen = true;
+
+    @Setter private int fps = 0;
+
     private String saveStatus = "";
 
-    // Was die Welt gerade zeigt (Pool): 0-8 = genau dieses Biom (row*3+col, siehe BIOME_NAMES),
-    // ALL_BIOMES_INDEX = die komplette, unbeschränkte Verblendung aller 9 Biome (Normalzustand
-    // der Karte). Getrennt von editBiome, damit man die volle Karte ansehen und trotzdem gezielt
-    // ein einzelnes Biom bearbeiten kann.
     private int selectedBiome = ALL_BIOMES_INDEX;
 
-    // Welches Biom die Form-Regler darunter gerade bearbeiten -- bleibt IMMER ein echtes Biom
-    // (nie "Alle"), damit Bearbeiten nie ins Leere geht. Wird automatisch auf selectedBiome
-    // synchronisiert, sobald ein echtes Biom im Pool gewählt wird; bleibt unverändert, wenn der
-    // Pool auf "Alle" steht (siehe Bug vom vorigen Umbau: getrennte Pool/Editier-Auswahl konnte
-    // dazu führen, dass Bearbeiten wirkungslos blieb, weil die Welt ein anderes Biom zeigte --
-    // dieser Fall kann jetzt nicht mehr passieren, weil editBiome nur beim expliziten Wählen
-    // eines echten Bioms geändert wird, nicht beim Wählen von "Alle").
     private int editBiome = 8;
 
     private final NumberField amplitudeField = new NumberField();
@@ -139,10 +117,6 @@ public final class TerrainEditorGui {
     private final NumberField humidityScaleField = new NumberField();
     private final NumberField heightTempLapseField = new NumberField();
 
-    // Muss als Feld gehalten werden (nicht lokal in setupFont()): STBTTFontinfo merkt sich nur
-    // einen rohen Zeiger in diesen Speicher fuer spaetere Glyph-Lookups (stbtt_GetCodepointHMetrics
-    // in der Query-Callback, die erst beim tatsaechlichen Rendern spaeter aufgerufen wird) -- als
-    // lokale Variable waere der direkte ByteBuffer nach setupFont() fuer den GC freigegeben.
     private ByteBuffer ttf;
 
     public TerrainEditorGui(long windowHandle, ChunkManager chunkManager, Player player) {
@@ -162,27 +136,6 @@ public final class TerrainEditorGui {
         nk_style_set_font(ctx, defaultFont);
     }
 
-    public boolean isOpen() {
-        return open;
-    }
-
-    public void setOpen(boolean open) {
-        this.open = open;
-    }
-
-    public boolean isInfoOpen() {
-        return infoOpen;
-    }
-
-    public void setInfoOpen(boolean infoOpen) {
-        this.infoOpen = infoOpen;
-    }
-
-    public void setFps(int fps) {
-        this.fps = fps;
-    }
-
-    // Muss vor Cores glfwPollEvents() aufgerufen werden (SceneRenderer.beforePollEvents).
     public void beginInput() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer w = stack.mallocInt(1);
@@ -199,7 +152,6 @@ public final class TerrainEditorGui {
         nk_input_begin(ctx);
     }
 
-    // Muss nach Cores glfwPollEvents() aufgerufen werden (SceneRenderer.afterPollEvents).
     public void endInput() {
         NkMouse mouse = ctx.input().mouse();
         if (mouse.grab()) {
@@ -290,19 +242,18 @@ public final class TerrainEditorGui {
                                     NkVec2.malloc(comboStack).set(nk_widget_width(ctx), 200));
                 }
                 if (selectedBiome == ALL_BIOMES_INDEX) {
-                    // Volle, unbeschränkte Verblendung -- editBiome bewusst NICHT anfassen, damit
-                    // die Form-Regler weiter am zuletzt gewählten echten Biom hängen.
-                    params.setMinRow(0);
-                    params.setMaxRow(2);
-                    params.setMinCol(0);
-                    params.setMaxCol(2);
+
+                    params.minRow(0);
+                    params.maxRow(2);
+                    params.minCol(0);
+                    params.maxCol(2);
                 } else {
                     int poolRow = selectedBiome / 3;
                     int poolCol = selectedBiome % 3;
-                    params.setMinRow(poolRow);
-                    params.setMaxRow(poolRow);
-                    params.setMinCol(poolCol);
-                    params.setMaxCol(poolCol);
+                    params.minRow(poolRow);
+                    params.maxRow(poolRow);
+                    params.minCol(poolCol);
+                    params.maxCol(poolCol);
                     editBiome = selectedBiome;
                 }
                 int row = editBiome / 3;
@@ -332,7 +283,9 @@ public final class TerrainEditorGui {
                                 "Wie hoch die Berge in diesem Biom werden -- höher bedeutet"
                                         + " größere Höhenunterschiede, niedriger eine flachere"
                                         + " Landschaft. Ändert nur die Größe, nicht die Form.",
-                                table.amplitude()[row][col]);
+                                table.amplitude()[row][col],
+                                0,
+                                3);
                 table.frequency()[row][col] =
                         frequencyField.draw(
                                 "Frequenz:",
@@ -341,7 +294,9 @@ public final class TerrainEditorGui {
                                         + " Hügel dicht gedrängt. Niedrig: wenige breite, weit"
                                         + " auseinanderliegende Berge. Ändert nur den Maßstab,"
                                         + " nicht die Form.",
-                                table.frequency()[row][col]);
+                                table.frequency()[row][col],
+                                0.1,
+                                5);
                 table.persistence()[row][col] =
                         persistenceField.draw(
                                 "Persistence:",
@@ -349,7 +304,9 @@ public final class TerrainEditorGui {
                                 "Wie glatt oder zerklüftet die Oberfläche wirkt -- niedrig: sanfte,"
                                         + " plateauartige Hügel wie Dünen. Hoch: raue, zerklüftete"
                                         + " Felsen mit vielen kleinen Unebenheiten.",
-                                table.persistence()[row][col]);
+                                table.persistence()[row][col],
+                                0.05,
+                                0.95);
                 table.lacunarity()[row][col] =
                         lacunarityField.draw(
                                 "Lacunarity:",
@@ -358,7 +315,9 @@ public final class TerrainEditorGui {
                                         + " niedrig: wirkt flach, kaum Feindetail. Um 2: natürlich"
                                         + " wirkendes Terrain. Hoch: extrem zerrissen, viele"
                                         + " Detailebenen übereinander.",
-                                table.lacunarity()[row][col]);
+                                table.lacunarity()[row][col],
+                                1,
+                                4);
                 table.redistribution()[row][col] =
                         redistributionField.draw(
                                 "Redistribution (Gipfel):",
@@ -369,7 +328,9 @@ public final class TerrainEditorGui {
                                     + " Amplitude). Über 1: schmale, scharfe Gipfel auf breiter"
                                     + " Fläche. Unter 1: umgekehrt -- breite Plateaus. Genau 1:"
                                     + " kein Effekt.",
-                                table.redistribution()[row][col]);
+                                table.redistribution()[row][col],
+                                0.2,
+                                5);
                 table.valleyRedistribution()[row][col] =
                         valleyRedistributionField.draw(
                                 "Redistribution (Täler):",
@@ -380,12 +341,14 @@ public final class TerrainEditorGui {
                                     + " fast komplett unterdrückt -- keine unmotivierten Einbrüche/"
                                     + " Senken mehr, Täler bleiben durchgehend ruhig. Genau 1: kein"
                                     + " Effekt (symmetrisch zu Gipfeln).",
-                                table.valleyRedistribution()[row][col]);
+                                table.valleyRedistribution()[row][col],
+                                0.2,
+                                8);
 
                 sectionDivider();
                 nk_layout_row_dynamic(ctx, 18, 1);
                 nk_label(ctx, "ALLE BIOME - Globale Regler", NK_TEXT_LEFT);
-                params.setOctaves(
+                params.octaves(
                         (int)
                                 Math.round(
                                         octavesField.draw(
@@ -395,47 +358,59 @@ public final class TerrainEditorGui {
                                                     + " -- wenige: weiche, runde Hügel ohne"
                                                     + " Kleinstdetails. Viele: scharfe Felskanten"
                                                     + " und Erosionsrillen.",
-                                                params.octaves())));
-                params.setHeightScale(
+                                                params.octaves(),
+                                                1,
+                                                8)));
+                params.heightScale(
                         heightScaleField.draw(
                                 "Height Scale:",
                                 "Wert 0.001 bis 0.2",
                                 "Wie weit Berge und Täler insgesamt auseinanderliegen -- klein:"
                                         + " riesige, weitläufige Gebirgszüge. Groß: enge, schnell"
                                         + " wechselnde Hügellandschaft.",
-                                params.heightScale()));
-                params.setHeightAmplitude(
+                                params.heightScale(),
+                                0.001,
+                                0.2));
+                params.heightAmplitude(
                         (float)
                                 heightAmplitudeField.draw(
                                         "Height Amp.:",
                                         "Wert 1 bis 300",
                                         "Wie hoch die höchsten Berge insgesamt werden, in"
                                                 + " Welteinheiten/Metern.",
-                                        params.heightAmplitude()));
-                params.setTempScale(
+                                        params.heightAmplitude(),
+                                        1,
+                                        300));
+                params.tempScale(
                         tempScaleField.draw(
                                 "Temp Scale:",
                                 "Wert 0.00001 bis 0.01",
                                 "Wie großflächig die Temperaturzonen sind -- klein halten, sonst"
                                         + " wirken Biome fleckig statt als große, zusammenhängende"
                                         + " Zonen.",
-                                params.tempScale()));
-                params.setHumidityScale(
+                                params.tempScale(),
+                                0.00001,
+                                0.01));
+                params.humidityScale(
                         humidityScaleField.draw(
                                 "Humid. Scale:",
                                 "Wert 0.00001 bis 0.01",
                                 "Wie großflächig die Feuchtezonen sind -- klein halten, sonst"
                                         + " wirken Biome fleckig statt als große, zusammenhängende"
                                         + " Zonen.",
-                                params.humidityScale()));
-                params.setHeightTempLapse(
+                                params.humidityScale(),
+                                0.00001,
+                                0.01));
+                params.heightTempLapse(
                         heightTempLapseField.draw(
                                 "Temp Lapse:",
                                 "Wert 0 bis 0.05",
                                 "Wie stark es mit der Höhe kälter wird -- höher bedeutet:"
                                         + " Bergspitzen kippen schneller in die kalte Ecke der"
                                         + " Biom-Tabelle (Richtung Zeile 0).",
-                                params.heightTempLapse()));
+                                params.heightTempLapse(),
+                                0,
+                                0.05));
 
                 sectionDivider();
                 nk_layout_row_dynamic(ctx, 24, 1);
@@ -444,6 +419,38 @@ public final class TerrainEditorGui {
                             vegStack.bytes((byte) (chunkManager.isVegetationEnabled() ? 1 : 0));
                     if (nk_checkbox_label(ctx, "Vegetation rendern", vegetationActive)) {
                         chunkManager.setVegetationEnabled(vegetationActive.get(0) != 0);
+                    }
+                }
+
+                VegetationController vegetationController = chunkManager.getVegetationController();
+                nk_layout_row_dynamic(ctx, 24, 1);
+                try (MemoryStack clumpStack = stackPush()) {
+                    ByteBuffer clumpingActive =
+                            clumpStack.bytes(
+                                    (byte)
+                                            (vegetationController.isOrganicClumpingEnabled()
+                                                    ? 1
+                                                    : 0));
+                    if (nk_checkbox_label(ctx, "Organisches Clumping", clumpingActive)) {
+                        vegetationController.setOrganicClumpingEnabled(clumpingActive.get(0) != 0);
+                    }
+                }
+
+                nk_layout_row_dynamic(ctx, 24, 1);
+                try (MemoryStack windStack = stackPush()) {
+                    ByteBuffer windActive =
+                            windStack.bytes((byte) (vegetationController.isWindEnabled() ? 1 : 0));
+                    if (nk_checkbox_label(ctx, "Wind-Animation", windActive)) {
+                        vegetationController.setWindEnabled(windActive.get(0) != 0);
+                    }
+                }
+
+                nk_layout_row_dynamic(ctx, 24, 1);
+                try (MemoryStack rockStack = stackPush()) {
+                    ByteBuffer rocksActive =
+                            rockStack.bytes((byte) (vegetationController.isRocksEnabled() ? 1 : 0));
+                    if (nk_checkbox_label(ctx, "Steine rendern", rocksActive)) {
+                        vegetationController.setRocksEnabled(rocksActive.get(0) != 0);
                     }
                 }
 
@@ -462,9 +469,7 @@ public final class TerrainEditorGui {
                     }
                 }
                 if (!saveStatus.isEmpty()) {
-                    // Feste Zeilenhöhe reicht für 1 Zeile -- eine umgebrochene Fehlermeldung mit
-                    // langem Pfad würde sonst nach der ersten Zeile abgeschnitten aussehen, ohne
-                    // dass das nach einem Fehler beim Speichern selbst aussieht. 90px = ~4 Zeilen.
+
                     nk_layout_row_dynamic(ctx, 90, 1);
                     nk_label_wrap(ctx, saveStatus);
                 }
@@ -477,9 +482,6 @@ public final class TerrainEditorGui {
         return Math.max(0, Math.min(2, value));
     }
 
-    // Sichtbare Trennung zwischen Abschnitten (Pool / Editier-Zelle / pro-Biom-Regler / globale
-    // Regler) -- eine echte Linie statt nur eines weiteren Labels, damit "nur dieses Biom" und
-    // "alle Biome" nicht optisch ineinanderlaufen.
     private void sectionDivider() {
         nk_layout_row_dynamic(ctx, 10, 1);
         nk_spacing(ctx, 1);
@@ -491,18 +493,19 @@ public final class TerrainEditorGui {
         nk_spacing(ctx, 1);
     }
 
-    // Anklickbares Zahlen-Eingabefeld statt Drag-Slider: Buffer/Länge müssen zwischen Frames
-    // erhalten bleiben, solange der Nutzer tippt (Nuklear ist immediate-mode, das Widget selbst
-    // hat kein Gedächtnis). Der angezeigte Text wird nur dann aus dem echten Wert neu befüllt,
-    // wenn das Feld gerade NICHT aktiv ist (sonst würde jeder Frame die Eingabe überschreiben)
-    // und sich der Wert seit dem letzten Abgleich geändert hat (z.B. nach Zellwechsel).
     private final class NumberField {
         private final ByteBuffer buffer = BufferUtils.createByteBuffer(32);
         private final int[] length = {0};
         private double committed = Double.NaN;
         private boolean activeLastFrame = false;
 
-        double draw(String label, String rangeHint, String description, double currentValue) {
+        double draw(
+                String label,
+                String rangeHint,
+                String description,
+                double currentValue,
+                double min,
+                double max) {
             if (!activeLastFrame && Double.compare(currentValue, committed) != 0) {
                 setText(formatNumber(currentValue));
                 committed = currentValue;
@@ -533,10 +536,9 @@ public final class TerrainEditorGui {
             for (int i = 0; i < length[0]; i++) bytes[i] = buffer.get(i);
             String text = new String(bytes, StandardCharsets.UTF_8).trim();
             try {
-                committed = Double.parseDouble(text);
+                committed = Math.max(min, Math.min(max, Double.parseDouble(text)));
             } catch (NumberFormatException e) {
-                // Zwischenzustand beim Tippen (z.B. "-", "0.", leer) -- letzten gültigen Wert
-                // behalten
+
             }
             return committed;
         }
@@ -585,10 +587,7 @@ public final class TerrainEditorGui {
                                 nk_input_key(ctx, NK_KEY_SHIFT, press);
                         case GLFW_KEY_LEFT -> nk_input_key(ctx, NK_KEY_LEFT, press);
                         case GLFW_KEY_RIGHT -> nk_input_key(ctx, NK_KEY_RIGHT, press);
-                        default -> {
-                            // Andere Tasten (WASD, Q/E, Pfeiltasten fuer Speed etc.) werden von
-                            // PbrTestLauncher per Polling gelesen -- hier nichts zu tun.
-                        }
+                        default -> {}
                     }
                 });
         glfwSetCursorPosCallback(
@@ -744,9 +743,7 @@ public final class TerrainEditorGui {
 
         fontTexId = glGenTextures();
         STBTTFontinfo fontInfo = STBTTFontinfo.create();
-        // 224 Zeichen ab Codepoint 32 deckt ASCII + Latin-1 Supplement ab (bis 255) -- sonst
-        // stürzt stbtt_GetPackedQuad bei deutschen Umlauten/ß (ä/ö/ü/Ä/Ö/Ü/ß, Codepoints > 126)
-        // mit einem Out-of-Bounds-Fehler ab, weil "codepoint - 32" außerhalb des Buffers landet.
+
         STBTTPackedchar.Buffer cdata = STBTTPackedchar.create(224);
 
         float scale;
@@ -768,7 +765,6 @@ public final class TerrainEditorGui {
             stbtt_PackFontRange(pc, ttf, 0, FONT_HEIGHT, 32, cdata);
             stbtt_PackEnd(pc);
 
-            // R8 -> RGBA8 (Alpha aus dem Bitmap, RGB weiss -- Text wird per Frag_Color eingefaerbt)
             ByteBuffer texture = memAlloc(BITMAP_SIZE * BITMAP_SIZE * 4);
             for (int i = 0; i < bitmap.capacity(); i++) {
                 texture.putInt((bitmap.get(i) << 24) | 0x00FFFFFF);
@@ -832,10 +828,6 @@ public final class TerrainEditorGui {
                                 STBTTAlignedQuad q = STBTTAlignedQuad.malloc(stack);
                                 IntBuffer advance = stack.mallocInt(1);
 
-                                // Gebackener Zeichensatz deckt nur Codepoints 32-255 ab (ASCII +
-                                // Latin-1). Alles außerhalb (z.B. Gedankenstrich "—", U+2014)
-                                // würde stbtt_GetPackedQuad mit Out-of-Bounds abstürzen lassen --
-                                // stattdessen auf '?' ausweichen statt die App zu crashen.
                                 int safeCodepoint =
                                         (codepoint < 32 || codepoint > 255) ? '?' : codepoint;
 
@@ -976,9 +968,6 @@ public final class TerrainEditorGui {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
-        // Nuklear hinterlaesst Blend/Cull/Depth/Scissor in einem UI-freundlichen Zustand --
-        // exakt auf das zurücksetzen, was Core.java beim Start konfiguriert, sonst rendert die
-        // 3D-Szene ab dem naechsten Frame ohne Depth-Test/Culling.
         glDisable(GL_SCISSOR_TEST);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);

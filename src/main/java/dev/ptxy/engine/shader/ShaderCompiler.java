@@ -22,7 +22,7 @@ public class ShaderCompiler {
         return id;
     }
 
-    public static void preloadConfiguredShaders(String vertexPath, String fragmentPath) {
+    public static void preloadConfiguredShaders() {
         String[] arr = Config.getPreloadShaders();
         long totalStart = System.nanoTime();
         log.info("Preloading {} configured shader(s)", arr.length);
@@ -44,7 +44,7 @@ public class ShaderCompiler {
                         shaderId);
             }
         } catch (ConfigurationException ce) {
-            throw new RuntimeException(ce.getMessage());
+            throw new RuntimeException(ce.getMessage(), ce);
         }
         log.info("All shaders preloaded in {}ms", elapsed(totalStart));
     }

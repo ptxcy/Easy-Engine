@@ -7,9 +7,11 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.config.WindowConfig;
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@Getter
 public final class GameWindow {
     private static final Logger log = LogManager.getLogger(GameWindow.class);
 
@@ -37,17 +39,6 @@ public final class GameWindow {
         throw new RuntimeException(
                 "Tryed to get the current Window Object before Instanciating it (Window Object was"
                         + " null Core Class must be instantiated first)");
-    }
-
-    public static void createWindow(
-            Integer width, Integer height, String title, Long monitor, Long share) {
-        if (currentActiveWindow != null) {
-            log.debug("Destroying existing window before recreation");
-            glfwFreeCallbacks(GameWindow.getActiveWindow().getWindowHandle());
-            glfwDestroyWindow(GameWindow.getActiveWindow().getWindowHandle());
-        }
-
-        currentActiveWindow = new GameWindow(width, height, title, monitor, share);
     }
 
     public static void createWindowFromConfig() {
@@ -78,30 +69,6 @@ public final class GameWindow {
             glfwFreeCallbacks(GameWindow.getActiveWindow().getWindowHandle());
             glfwDestroyWindow(GameWindow.getActiveWindow().getWindowHandle());
         }
-    }
-
-    public Integer getWidth() {
-        return width;
-    }
-
-    public Integer getHeight() {
-        return height;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public Long getMonitor() {
-        return monitor;
-    }
-
-    public Long getShare() {
-        return share;
-    }
-
-    public long getWindowHandle() {
-        return windowHandle;
     }
 
     @Override

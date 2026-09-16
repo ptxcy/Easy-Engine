@@ -14,7 +14,9 @@ public record BiomeLookUpTable(
         double[][] redistribution,
         double[][] valleyRedistribution,
         double[][] targetAreaPercent,
-        boolean[][] enabled) {
+        boolean[][] enabled,
+        boolean[][] depthCapEnabled,
+        double[][] depthCapMeters) {
     private static final Logger log = LogManager.getLogger(BiomeLookUpTable.class);
 
     public static BiomeLookUpTable fromConfig() {
@@ -34,14 +36,11 @@ public record BiomeLookUpTable(
                 loadTable(raw, "redistribution"),
                 loadTable(raw, "valleyRedistribution"),
                 targetAreaPercent,
-                enabled);
+                enabled,
+                loadBooleanTable(raw, "depthCapEnabled"),
+                loadTable(raw, "depthCapMeters"));
     }
 
-    // Höhenfärbung (shader/base/fragment.glsl) normiert jetzt auf EINEN festen Weltmaßstab
-    // (SceneConfig.json terrain.worldMaxHeightMeters) statt pro Biom relativ -- Design-Vorgabe,
-    // kein automatisch abgeleiteter Wert. Übersteigt eine aktivierte Zelle diesen Maßstab, clippt
-    // ihre Färbung oben auf reine Schneefarbe statt eines Farbverlaufs; das hier ist nur eine
-    // Warnung (keine Ausnahme), da eine leichte Überschreitung bewusst gewählt sein könnte.
     private static void validateWorldMaxHeight(double[][] amplitude, boolean[][] enabled) {
         TerrainConfig terrain = Config.getTerrainConfig();
         double worldMaxHeight = terrain.worldMaxHeightMeters();
@@ -65,10 +64,6 @@ public record BiomeLookUpTable(
         }
     }
 
-    // FA4 (diskrete Flächenanteil-Randbedingung, siehe Map.calibrateActiveCellPositions): Die
-    // Zielanteile der aktivierten Zellen müssen sich zu ~100% summieren, sonst ist die Vorgabe
-    // widersprüchlich. Fail-fast beim Programmstart statt eines still falschen
-    // Kalibrierungsergebnisses zur Laufzeit.
     private static void validateTargetAreaPercent(
             double[][] targetAreaPercent, boolean[][] enabled) {
         double sum = 0;
@@ -97,11 +92,6 @@ public record BiomeLookUpTable(
                 .toArray(double[][]::new);
     }
 
-    // Welche der 9 Zellen standardmäßig ("Alle Biome" im Editor-Pool) überhaupt erzeugt werden --
-    // Scope-Entscheidung 2026-08-06, nur noch 3 Biome tatsächlich zu designen (siehe arbeit.tex,
-    // TODOs). Isoliertes Editieren einer einzelnen Zelle im Editor ignoriert diese Einschränkung
-    // bewusst (siehe Map.resolveCell), damit auch deaktivierte Zellen weiterhin einzeln testbar
-    // bleiben.
     private static boolean[][] loadBooleanTable(JsonObject raw, String key) {
         return StreamSupport.stream(raw.get(key).getAsJsonArray().spliterator(), false)
                 .map(JsonElement::getAsJsonArray)

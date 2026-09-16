@@ -4,7 +4,13 @@ import java.util.Arrays;
 import java.util.Objects;
 
 record ChunkMeshData(
-        ChunkPos pos, float[] vertices, float[] grassNodes, float[] treeNodes, int generation) {
+        ChunkPos pos,
+        float[] vertices,
+        float[] grassNodes,
+        float[] treeNodes,
+        float[] rockNodes,
+        boolean vegetationComputed,
+        int generation) {
 
     @Override
     public boolean equals(Object o) {
@@ -16,12 +22,16 @@ record ChunkMeshData(
                         float[] vertices1,
                         float[] grassNodes1,
                         float[] treeNodes1,
+                        float[] rockNodes1,
+                        boolean vegetationComputed1,
                         int generation1))) return false;
         return generation == generation1
+                && vegetationComputed == vegetationComputed1
                 && Objects.equals(pos, pos1)
                 && Arrays.equals(vertices, vertices1)
                 && Arrays.equals(grassNodes, grassNodes1)
-                && Arrays.equals(treeNodes, treeNodes1);
+                && Arrays.equals(treeNodes, treeNodes1)
+                && Arrays.equals(rockNodes, rockNodes1);
     }
 
     @Override
@@ -31,6 +41,8 @@ record ChunkMeshData(
                 Arrays.hashCode(vertices),
                 Arrays.hashCode(grassNodes),
                 Arrays.hashCode(treeNodes),
+                Arrays.hashCode(rockNodes),
+                vegetationComputed,
                 generation);
     }
 
@@ -44,6 +56,10 @@ record ChunkMeshData(
                 + Arrays.toString(grassNodes)
                 + ", treeNodes="
                 + Arrays.toString(treeNodes)
+                + ", rockNodes="
+                + Arrays.toString(rockNodes)
+                + ", vegetationComputed="
+                + vegetationComputed
                 + ", generation="
                 + generation
                 + "]";

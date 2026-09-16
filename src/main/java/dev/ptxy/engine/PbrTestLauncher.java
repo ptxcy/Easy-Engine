@@ -11,7 +11,6 @@ import dev.ptxy.engine.core.SceneRenderer;
 import dev.ptxy.engine.light.DirectionalLight;
 import dev.ptxy.engine.map.ChunkManager;
 import dev.ptxy.engine.map.Map;
-import dev.ptxy.engine.objects.assets.SceneNodeRegistry;
 import dev.ptxy.engine.ui.TerrainEditorGui;
 import dev.ptxy.engine.world.Player;
 import java.io.FileWriter;
@@ -27,9 +26,6 @@ public class PbrTestLauncher implements SceneRenderer {
     private static final Logger log = LogManager.getLogger(PbrTestLauncher.class);
     private static final PlayerConfig PLAYER_CONFIG = Config.getPlayerConfig();
 
-    // SPEED_RATE ist eine relative Änderung pro Sekunde (exponentielle Rampe für alle vier
-    // Pfeiltasten einheitlich) -- 1.0f verdoppelt/halbiert moveStep/rotateStep ungefähr alle
-    // 0.7s bei gehaltener Taste.
     private static final float SPEED_RATE = PLAYER_CONFIG.speedRate();
 
     private float moveStep = PLAYER_CONFIG.moveStep();
@@ -38,16 +34,17 @@ public class PbrTestLauncher implements SceneRenderer {
     private boolean initiated = false;
     private long windowHandle;
 
-    private final boolean[] debugKeyWasDown = new boolean[4];
-    private boolean editorToggleKeyWasDown = false;
-    private boolean infoToggleKeyWasDown = false;
-    private boolean debugDumpKeyWasDown = false;
+    private final KeyEdge editorToggleKey = new KeyEdge(GLFW.GLFW_KEY_P);
+    private final KeyEdge infoToggleKey = new KeyEdge(GLFW.GLFW_KEY_I);
+    private final KeyEdge debugDumpKey = new KeyEdge(GLFW.GLFW_KEY_K);
+    private final KeyEdge debugStateKey = new KeyEdge(GLFW.GLFW_KEY_L);
+    private final KeyEdge[] debugModeKeys = {
+        new KeyEdge(GLFW.GLFW_KEY_1),
+        new KeyEdge(GLFW.GLFW_KEY_2),
+        new KeyEdge(GLFW.GLFW_KEY_3),
+        new KeyEdge(GLFW.GLFW_KEY_4)
+    };
 
-    // Richtung hatte bisher (0,-1,0) -- Sonne exakt im Zenit, senkrecht von oben. Damit ist
-    // NdotL = N.y, also nur von der puren Hangneigung abhängig, nie von der Ausrichtung eines
-    // Hangs zur Sonne -- ein Ost- und ein Westhang gleicher Steilheit sahen identisch hell aus,
-    // das Relief wirkte deshalb flach. Mit horizontaler Komponente (schräger Sonnenstand)
-    // entsteht tatsächliche Licht/Schatten-Zeichnung der Form.
     private final DirectionalLight light =
             new DirectionalLight(
                     new Vector3f(0.45f, -0.75f, 0.35f).normalize(),
@@ -69,18 +66,9 @@ public class PbrTestLauncher implements SceneRenderer {
             editor = new TerrainEditorGui(windowHandle, chunkManager, player);
         }
 
-        boolean editorToggleKeyDown =
-                GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_P) == GLFW.GLFW_PRESS;
-        if (editorToggleKeyDown && !editorToggleKeyWasDown) editor.setOpen(!editor.isOpen());
-        editorToggleKeyWasDown = editorToggleKeyDown;
+        if (editorToggleKey.pressed(windowHandle)) editor.setOpen(!editor.isOpen());
+        if (infoToggleKey.pressed(windowHandle)) editor.setInfoOpen(!editor.isInfoOpen());
 
-        boolean infoToggleKeyDown =
-                GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_I) == GLFW.GLFW_PRESS;
-        if (infoToggleKeyDown && !infoToggleKeyWasDown) editor.setInfoOpen(!editor.isInfoOpen());
-        infoToggleKeyWasDown = infoToggleKeyDown;
-
-        // Solange der Editor offen ist, geht Tastatur-Input ans Panel statt an Kamera/Debug-
-        // Modi (sonst würde z.B. Tippen in ein Zahlenfeld gleichzeitig den Spieler bewegen).
         if (!editor.isOpen()) {
             if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS) {
                 moveStep *= (1f + SPEED_RATE * deltaTime);
@@ -95,23 +83,17 @@ public class PbrTestLauncher implements SceneRenderer {
             if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_PRESS)
                 rotateStep *= (1f - SPEED_RATE * deltaTime);
 
-            int[] debugKeys = {GLFW.GLFW_KEY_1, GLFW.GLFW_KEY_2, GLFW.GLFW_KEY_3, GLFW.GLFW_KEY_4};
-            for (int m = 0; m < debugKeys.length; m++) {
-                boolean down = GLFW.glfwGetKey(windowHandle, debugKeys[m]) == GLFW.GLFW_PRESS;
-                if (down && !debugKeyWasDown[m]) chunkManager.setDebugMode(m);
-                debugKeyWasDown[m] = down;
+            for (int m = 0; m < debugModeKeys.length; m++) {
+                if (debugModeKeys[m].pressed(windowHandle)) chunkManager.setDebugMode(m);
             }
 
-            boolean debugDumpKeyDown =
-                    GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
-            if (debugDumpKeyDown && !debugDumpKeyWasDown) dumpDebugInfo();
-            debugDumpKeyWasDown = debugDumpKeyDown;
+            if (debugDumpKey.pressed(windowHandle)) dumpDebugInfo();
+            if (debugStateKey.pressed(windowHandle)) chunkManager.logDebugState();
 
             player.update(windowHandle, rotateStep, deltaTime);
         }
 
-        Vector3f lookDir = player.getCamera().getForward();
-        chunkManager.update(player.getX(), player.getZ(), lookDir.x, lookDir.z);
+        chunkManager.update(player.getX(), player.getZ(), player.getCamera());
 
         renderObjects();
     }
@@ -131,10 +113,6 @@ public class PbrTestLauncher implements SceneRenderer {
         if (editor != null) editor.setFps(fps);
     }
 
-    // Debug-Hilfsmittel (Taste K): schreibt Spielerposition, Kamera-Ausrichtung und ein lokales
-    // Höhen-/Gewichts-Gitter um den Spieler nach /tmp/easy-engine-debug.json -- damit lassen sich
-    // gemeldete Stellen (z.B. eine sichtbare Kante) anhand echter Live-Koordinaten des laufenden
-    // Spiels nachvollziehen, statt die Position von außen schätzen zu müssen.
     private static final double DEBUG_DUMP_HALF_EXTENT = 150.0;
     private static final double DEBUG_DUMP_STEP = 5.0;
 
@@ -202,21 +180,20 @@ public class PbrTestLauncher implements SceneRenderer {
 
     private void instanceObjects() {
         log.info("Loading scene objects");
-        SceneNodeRegistry.preloadAssets();
         chunkManager = new ChunkManager(0);
     }
 
     private void renderObjects() {
         SimpleCamera3D camera = player.getCamera();
         chunkManager.renderAll(camera, light);
-        chunkManager.renderVegetation(camera, light);
+        chunkManager.renderVegetation(camera, light, (float) GLFW.glfwGetTime());
         editor.render();
     }
 
     @Override
     public void shutdown() {
-        editor.shutdown();
-        chunkManager.shutdown();
+        if (editor != null) editor.shutdown();
+        if (chunkManager != null) chunkManager.shutdown();
     }
 
     public PbrTestLauncher() {}

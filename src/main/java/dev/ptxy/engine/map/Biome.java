@@ -1,5 +1,10 @@
 package dev.ptxy.engine.map;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
+@Getter
+@Accessors(fluent = true)
 public enum Biome {
     TUNDRA_STEPPE(0, 0, "Tundra/Steppe"),
     COOL_GRASSLAND(0, 1, "kühles Grasland"),
@@ -10,8 +15,7 @@ public enum Biome {
     HOT_DESERT(2, 0, "heiße Wüste"),
     SHRUBLAND_CHAPARRAL(2, 1, "Buschland/Chaparral"),
     RAINFOREST(2, 2, "Regenwald"),
-    // Kein Temp/Feuchte-Gitterplatz (row/col -1) -- wird nicht über resolveCell()/fromCell()
-    // erreicht, sondern als Höhen-Override in Map.getBiome() unabhängig von der Zelle vergeben.
+
     ALPINE(-1, -1, "Alpin/Gebirge");
 
     private final int row;
@@ -22,18 +26,6 @@ public enum Biome {
         this.row = row;
         this.col = col;
         this.displayName = displayName;
-    }
-
-    public int row() {
-        return row;
-    }
-
-    public int col() {
-        return col;
-    }
-
-    public String displayName() {
-        return displayName;
     }
 
     public static Biome fromCell(int row, int col) {

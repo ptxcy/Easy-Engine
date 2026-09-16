@@ -46,42 +46,26 @@ dependencies {
 
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"
-    implementation "org.lwjgl:lwjgl-assimp"
-    implementation "org.lwjgl:lwjgl-bgfx"
     implementation "org.lwjgl:lwjgl-glfw"
-    implementation "org.lwjgl:lwjgl-nanovg"
     implementation "org.lwjgl:lwjgl-nuklear"
-    implementation "org.lwjgl:lwjgl-openal"
     implementation "org.lwjgl:lwjgl-opengl"
-    implementation "org.lwjgl:lwjgl-par"
     implementation "org.lwjgl:lwjgl-stb"
-    implementation "org.lwjgl:lwjgl-vulkan"
     implementation "org.lwjgl:lwjgl::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-assimp::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-bgfx::$lwjglNatives"
     implementation "org.lwjgl:lwjgl-glfw::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-nanovg::$lwjglNatives"
     implementation "org.lwjgl:lwjgl-nuklear::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-openal::$lwjglNatives"
     implementation "org.lwjgl:lwjgl-opengl::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-par::$lwjglNatives"
     implementation "org.lwjgl:lwjgl-stb::$lwjglNatives"
-    if (lwjglNatives == "natives-macos-arm64") implementation "org.lwjgl:lwjgl-vulkan::$lwjglNatives"
     implementation "org.joml:joml:${jomlVersion}"
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation("de.articdive:jnoise-pipeline:4.1.0")
 
     implementation 'org.apache.logging.log4j:log4j-api:2.24.3'
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
-}
 
-tasks.register("copyAssets", Copy) {
-    from("assets")
-    into(layout.buildDirectory.dir("libs/assets"))
-}
-
-tasks.named("build") {
-    dependsOn("copyAssets")
+    compileOnly 'org.projectlombok:lombok:1.18.38'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
+    testCompileOnly 'org.projectlombok:lombok:1.18.38'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
 }
 
 tasks.register("runEngine", Exec) {

@@ -1,23 +1,23 @@
 {
+  "preloadAssets": [
+    "grass_ground_ref.gltf"
+  ],
   "preloadShaders": [
     "shader/base",
     "shader/vegetation",
-    "shader/vegetation_wind",
-    "shader/tree",
-    "shader/rock"
+    "shader/tree"
   ],
   "window": {
     "title": "Game",
     "width": 1920,
     "height": 1080,
-    "vsync": true
+    "vsync": false
   },
   "terrain": {
     "chunkSize": 64,
     "chunkResolution": 64,
-    "renderDistance": 28,
-    "heightAmplitude": 100.0,
-    "worldMaxHeightMeters": 1000.0,
+    "renderDistance": 64,
+    "heightAmplitude": 70.0,
     "workerThreads": 6,
     "noise": {
       "heightOctaves": 5,
@@ -27,6 +27,7 @@
       "heightTempLapse": 0.008
     },
     "biomsLookUpTable": {
+      "info": "row \u003d temp (kalt/mittel/warm) / column \u003d humidity (trocken/mittel/feucht) -\u003e 2D graph. Aktiv (Scope-Entscheidung 2026-08-06, siehe arbeit.tex TODOs): [0][0] Tundra/Steppe, [1][1] Savanne/Praeriegrasland (Baseline), [2][2] Regenwald. Restliche Zellen sind neutrale Platzhalter, siehe \u0027enabled\u0027.",
       "amplitude": [
         [
           3.0,
@@ -41,12 +42,12 @@
         [
           0.3,
           0.3,
-          0.1
+          0.35
         ]
       ],
       "frequency": [
         [
-          0.1,
+          0.15,
           1.0,
           1.0
         ],
@@ -58,12 +59,12 @@
         [
           1.0,
           1.0,
-          0.1
+          0.4
         ]
       ],
       "persistence": [
         [
-          0.45,
+          0.6,
           0.5,
           0.5
         ],
@@ -80,7 +81,7 @@
       ],
       "lacunarity": [
         [
-          2.5,
+          2.0,
           2.0,
           2.0
         ],
@@ -97,7 +98,7 @@
       ],
       "redistribution": [
         [
-          1.3,
+          3.0,
           1.0,
           1.0
         ],
@@ -109,12 +110,12 @@
         [
           1.0,
           1.0,
-          1.0
+          1.2
         ]
       ],
       "valleyRedistribution": [
         [
-          7.0,
+          6.0,
           1.0,
           1.0
         ],
@@ -126,24 +127,7 @@
         [
           1.0,
           1.0,
-          1.0
-        ]
-      ],
-      "targetAreaPercent": [
-        [
-          15.0,
-          0.0,
-          0.0
-        ],
-        [
-          0.0,
-          40.0,
-          0.0
-        ],
-        [
-          0.0,
-          0.0,
-          45.0
+          4.0
         ]
       ],
       "enabled": [
@@ -162,87 +146,26 @@
           false,
           true
         ]
-      ],
-      "depthCapEnabled": [
-        [
-          false,
-          false,
-          false
-        ],
-        [
-          false,
-          true,
-          false
-        ],
-        [
-          false,
-          false,
-          true
-        ]
-      ],
-      "depthCapMeters": [
-        [
-          0.0,
-          0.0,
-          0.0
-        ],
-        [
-          0.0,
-          -8.0,
-          0.0
-        ],
-        [
-          0.0,
-          0.0,
-          -8.0
-        ]
       ]
     },
     "vegetation": {
+      "info": "gridDensity = Nodes pro Chunk-Seite (density x density Gitter, Zellmitten -- keine doppelte Platzierung an Chunk-Grenzen). renderDistance (Chunks um den Spieler) ist bewusst viel kleiner als terrain.renderDistance -- einzelne Halme sind auf Terrain-Sichtweite (hier 64!) längst nicht mehr wahrnehmbar, kosten dort aber vollen Draw-Call + GPU-Instancing-Overhead pro Chunk. Pro Vegetations-Typ eine coveragePercent-Tabelle (0-100) je Biome-Enum-Name; fehlende Biome = 0 (nicht designt).",
+      "gridDensity": 256,
       "renderDistance": 10,
       "types": {
         "grass": {
-          "gridDensity": 64,
           "coveragePercent": {
             "TUNDRA_STEPPE": 5,
             "SAVANNA_PRAIRIE": 5,
             "RAINFOREST": 45,
             "ALPINE": 5
-          },
-          "scale": {
-            "widthMin": 0.16,
-            "widthMax": 0.26,
-            "heightMin": 0.9,
-            "heightMax": 1.6
           }
         },
         "tree": {
-          "gridDensity": 256,
           "coveragePercent": {
             "TUNDRA_STEPPE": 0.05,
             "SAVANNA_PRAIRIE": 0.15,
             "RAINFOREST": 0.6
-          },
-          "scale": {
-            "heightMin": 7.0,
-            "heightMax": 14.0,
-            "radiusMin": 1.0,
-            "radiusMax": 1.7
-          }
-        },
-        "rock": {
-          "gridDensity": 96,
-          "coveragePercent": {
-            "TUNDRA_STEPPE": 0.35,
-            "SAVANNA_PRAIRIE": 0.1,
-            "RAINFOREST": 0.03,
-            "ALPINE": 0.7
-          },
-          "scale": {
-            "heightMin": 0.6,
-            "heightMax": 1.8,
-            "radiusMin": 0.5,
-            "radiusMax": 1.2
           }
         }
       }

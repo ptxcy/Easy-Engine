@@ -44,13 +44,6 @@ public final class Config {
         throw new IllegalStateException("Utility class");
     }
 
-    public static String[] getPreloadAssets() {
-        return StreamSupport.stream(
-                        CONFIG_JSON.get("preloadAssets").getAsJsonArray().spliterator(), false)
-                .map(JsonElement::getAsString)
-                .toArray(String[]::new);
-    }
-
     public static String[] getPreloadShaders() {
         return StreamSupport.stream(
                         CONFIG_JSON.get("preloadShaders").getAsJsonArray().spliterator(), false)
@@ -94,21 +87,10 @@ public final class Config {
         return VEGETATION_CONFIG;
     }
 
-    // Mutable Live-Parameter -- Map/ChunkManager lesen dieselbe Instanz, die der Editor
-    // beschreibt. Anders als TERRAIN_CONFIG (Record, unveränderlich) ist das hier der Hebel
-    // für Laufzeit-Regenerierung ohne App-Neustart.
     public static TerrainParams getTerrainParams() {
         return TERRAIN_PARAMS;
     }
 
-    // Schreibt die aktuellen TerrainParams + BiomeLookUpTable-Werte zurück in die ursprüngliche
-    // SceneConfig.json auf der Festplatte (Editor-"Speichern"-Button) -- damit Werte, die im
-    // Terrain-Editor getunt wurden, den App-Neustart überleben und committed/gepusht werden
-    // können. Alles andere in der Datei (player, preloadAssets/-Shaders, chunkSize/Resolution/
-    // renderDistance/workerThreads) bleibt unverändert, da CONFIG_JSON schon das komplette
-    // ursprüngliche Dokument ist und nur die von TerrainParams besessenen Felder überschrieben
-    // werden. Gibt den Zielpfad zurück; wirft, wenn er nicht ermittelbar ist oder das Schreiben
-    // fehlschlägt (vom Aufrufer für eine Status-Anzeige zu fangen).
     public static String saveTerrainParams() {
         JsonObject terrain = getTerrainJsonObject();
         terrain.addProperty("heightAmplitude", TERRAIN_PARAMS.heightAmplitude());
