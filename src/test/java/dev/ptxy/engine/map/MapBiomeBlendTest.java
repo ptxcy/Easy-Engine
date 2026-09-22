@@ -16,9 +16,12 @@ class MapBiomeBlendTest {
             double z = x * 0.6;
             Map.BiomeWeights w = map.getBiomeWeights(x, z);
             assertTrue(
-                    w.tundra() >= -EPSILON && w.savanna() >= -EPSILON && w.rainforest() >= -EPSILON,
+                    w.tundra() >= -EPSILON
+                            && w.savanna() >= -EPSILON
+                            && w.deciduousForest() >= -EPSILON,
                     "negatives Gewicht bei x=" + x + ": " + w);
-            assertEquals(1.0, w.tundra() + w.savanna() + w.rainforest(), 1e-6, "Summe bei x=" + x);
+            assertEquals(
+                    1.0, w.tundra() + w.savanna() + w.deciduousForest(), 1e-6, "Summe bei x=" + x);
         }
     }
 
@@ -33,10 +36,10 @@ class MapBiomeBlendTest {
                     switch (cell[0] * 3 + cell[1]) {
                         case 0 -> w.tundra();
                         case 4 -> w.savanna();
-                        case 8 -> w.rainforest();
+                        case 5 -> w.deciduousForest();
                         default -> 0.0;
                     };
-            double maxWeight = Math.max(w.tundra(), Math.max(w.savanna(), w.rainforest()));
+            double maxWeight = Math.max(w.tundra(), Math.max(w.savanna(), w.deciduousForest()));
             assertEquals(
                     maxWeight,
                     weightOfNearest,
@@ -66,10 +69,10 @@ class MapBiomeBlendTest {
                     EPSILON,
                     "Savanne-Gewicht bei x=" + x);
             assertEquals(
-                    weights.rainforest(),
-                    sample.weights().rainforest(),
+                    weights.deciduousForest(),
+                    sample.weights().deciduousForest(),
                     EPSILON,
-                    "Regenwald-Gewicht bei x=" + x);
+                    "Laubwald-Gewicht bei x=" + x);
 
             int[] cell = map.getBiomeCell(x, z);
             assertEquals(cell[0], sample.nearestCell()[0], "Zeile bei x=" + x);

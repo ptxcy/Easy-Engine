@@ -10,10 +10,12 @@ final class UploadQueue {
         queue.offer(data);
     }
 
-    void drainTo(Consumer<ChunkMeshData> handler) {
+    void drainTo(Consumer<ChunkMeshData> handler, int maxItems) {
         ChunkMeshData data;
-        while ((data = queue.poll()) != null) {
+        int drained = 0;
+        while (drained < maxItems && (data = queue.poll()) != null) {
             handler.accept(data);
+            drained++;
         }
     }
 

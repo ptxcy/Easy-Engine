@@ -19,12 +19,21 @@
     "heightAmplitude": 100.0,
     "worldMaxHeightMeters": 1000.0,
     "workerThreads": 6,
+    "maxChunkUploadsPerFrame": 4,
     "noise": {
       "heightOctaves": 5,
       "heightScale": 0.025,
       "tempScale": 6.0E-4,
       "humidityScale": 6.0E-4,
-      "heightTempLapse": 0.008
+      "heightTempLapse": 0.03
+    },
+    "biomeBlend": {
+      "alpineHeightFraction": 0.62,
+      "worldBlendWidthBaseMeters": 20.0,
+      "worldBlendWidthPerHeightMeter": 1.0,
+      "maxHeightGapMetersForBlendWidth": 50.0,
+      "borderWarpPeriodMeters": 450.0,
+      "borderWarpDistanceMeters": 120.0
     },
     "biomsLookUpTable": {
       "amplitude": [
@@ -35,13 +44,13 @@
         ],
         [
           0.3,
-          0.3,
-          0.3
+          0.04,
+          0.1
         ],
         [
           0.3,
           0.3,
-          0.1
+          0.3
         ]
       ],
       "frequency": [
@@ -53,12 +62,12 @@
         [
           1.0,
           0.1,
-          1.0
+          0.1
         ],
         [
           1.0,
           1.0,
-          0.1
+          1.0
         ]
       ],
       "persistence": [
@@ -69,13 +78,13 @@
         ],
         [
           0.5,
-          0.2,
-          0.5
+          0.5,
+          0.3
         ],
         [
           0.5,
           0.5,
-          0.3
+          0.5
         ]
       ],
       "lacunarity": [
@@ -138,12 +147,12 @@
         [
           0.0,
           40.0,
-          0.0
+          45.0
         ],
         [
           0.0,
           0.0,
-          45.0
+          0.0
         ]
       ],
       "enabled": [
@@ -155,12 +164,12 @@
         [
           false,
           true,
-          false
+          true
         ],
         [
           false,
           false,
-          true
+          false
         ]
       ],
       "depthCapEnabled": [
@@ -172,12 +181,12 @@
         [
           false,
           true,
-          false
+          true
         ],
         [
           false,
           false,
-          true
+          false
         ]
       ],
       "depthCapMeters": [
@@ -189,39 +198,56 @@
         [
           0.0,
           -8.0,
-          0.0
+          -8.0
         ],
         [
           0.0,
           0.0,
-          -8.0
+          0.0
         ]
       ]
     },
     "vegetation": {
       "renderDistance": 10,
+      "grassRenderDistance": 4,
+      "bladesPerNode": 16,
+      "bladeScatterRadiusMeters": 0.5,
+      "bladeLodNearDistanceMeters": 30.0,
+      "bladeLodFarDistanceMeters": 150.0,
+      "bladeLodMinBlades": 5,
+      "treeTrunkHeightFraction": 0.65,
+      "steepnessDampenStart": 0.35,
+      "steepnessDampenFull": 0.75,
+      "clumpContrastLow": 0.06,
+      "clumpContrastHigh": 0.7,
+      "clumpScale": {
+        "TUNDRA_STEPPE": 0.004,
+        "SAVANNA_PRAIRIE": 1.0E-4,
+        "DECIDUOUS_FOREST": 1.0E-4,
+        "ALPINE": 0.004
+      },
       "types": {
         "grass": {
           "gridDensity": 64,
           "coveragePercent": {
-            "TUNDRA_STEPPE": 5,
-            "SAVANNA_PRAIRIE": 5,
-            "RAINFOREST": 45,
-            "ALPINE": 5
+            "TUNDRA_STEPPE": 5.0,
+            "SAVANNA_PRAIRIE": 100.0,
+            "DECIDUOUS_FOREST": 100.0,
+            "ALPINE": 5.0
           },
           "scale": {
-            "widthMin": 0.16,
-            "widthMax": 0.26,
-            "heightMin": 0.9,
-            "heightMax": 1.6
+            "widthMin": 0.3,
+            "widthMax": 0.3,
+            "heightMin": 0.7,
+            "heightMax": 1.3
           }
         },
         "tree": {
           "gridDensity": 256,
           "coveragePercent": {
             "TUNDRA_STEPPE": 0.05,
-            "SAVANNA_PRAIRIE": 0.15,
-            "RAINFOREST": 0.6
+            "SAVANNA_PRAIRIE": 0.004,
+            "DECIDUOUS_FOREST": 0.6
           },
           "scale": {
             "heightMin": 7.0,
@@ -235,7 +261,7 @@
           "coveragePercent": {
             "TUNDRA_STEPPE": 0.35,
             "SAVANNA_PRAIRIE": 0.1,
-            "RAINFOREST": 0.03,
+            "DECIDUOUS_FOREST": 0.03,
             "ALPINE": 0.7
           },
           "scale": {

@@ -48,7 +48,7 @@ public class PbrTestLauncher implements SceneRenderer {
     private final DirectionalLight light =
             new DirectionalLight(
                     new Vector3f(0.45f, -0.75f, 0.35f).normalize(),
-                    new Vector3f(1.0f, 0.95f, 0.8f));
+                    new Vector3f(1.0f, 0.88f, 0.66f));
 
     private Player player;
     private ChunkManager chunkManager;
@@ -161,7 +161,7 @@ public class PbrTestLauncher implements SceneRenderer {
                 sample.addProperty("height", height);
                 sample.addProperty("tundra", weights.tundra());
                 sample.addProperty("savanna", weights.savanna());
-                sample.addProperty("rainforest", weights.rainforest());
+                sample.addProperty("deciduousForest", weights.deciduousForest());
                 sample.addProperty("cellRow", cell[0]);
                 sample.addProperty("cellCol", cell[1]);
                 samples.add(sample);

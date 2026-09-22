@@ -11,7 +11,7 @@ class BiomeTest {
     void ordinalsUsedByVegetationFragmentShaderStayStable() {
         assertEquals(0, Biome.TUNDRA_STEPPE.ordinal());
         assertEquals(4, Biome.SAVANNA_PRAIRIE.ordinal());
-        assertEquals(8, Biome.RAINFOREST.ordinal());
+        assertEquals(5, Biome.DECIDUOUS_FOREST.ordinal());
         assertEquals(9, Biome.ALPINE.ordinal());
     }
 

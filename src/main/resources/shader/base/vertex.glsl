@@ -6,7 +6,7 @@ layout(location = 2) in float aHumidity;
 layout(location = 3) in float aBiomeCell;
 layout(location = 4) in float aWeightTundra;
 layout(location = 5) in float aWeightSavanna;
-layout(location = 6) in float aWeightRainforest;
+layout(location = 6) in float aWeightDeciduous;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -20,7 +20,7 @@ flat out int vBiomeCell;
 
 out float vWeightTundra;
 out float vWeightSavanna;
-out float vWeightRainforest;
+out float vWeightDeciduous;
 
 void main() {
     vec4 wp = model * vec4(aPos, 1.0);
@@ -31,7 +31,7 @@ void main() {
     vBiomeCell = int(aBiomeCell + 0.5);
     vWeightTundra = aWeightTundra;
     vWeightSavanna = aWeightSavanna;
-    vWeightRainforest = aWeightRainforest;
+    vWeightDeciduous = aWeightDeciduous;
 
     gl_Position = projection * view * wp;
 }

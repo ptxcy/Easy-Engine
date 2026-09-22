@@ -11,7 +11,7 @@ class AreaConstraintCalibrationTest {
         Map map = new Map(123L);
         int tundra = 0;
         int savanna = 0;
-        int rainforest = 0;
+        int deciduous = 0;
         int gridSize = 400;
         double step = 5000.0;
         double origin = -gridSize * step / 2;
@@ -22,13 +22,13 @@ class AreaConstraintCalibrationTest {
                 int[] cell = map.getBiomeCell(x, z);
                 if (cell[0] == 0 && cell[1] == 0) tundra++;
                 else if (cell[0] == 1 && cell[1] == 1) savanna++;
-                else if (cell[0] == 2 && cell[1] == 2) rainforest++;
+                else if (cell[0] == 1 && cell[1] == 2) deciduous++;
             }
         }
         int total = gridSize * gridSize;
         double tundraPct = 100.0 * tundra / total;
         double savannaPct = 100.0 * savanna / total;
-        double rainforestPct = 100.0 * rainforest / total;
+        double deciduousPct = 100.0 * deciduous / total;
 
         assertTrue(
                 Math.abs(tundraPct - 15.0) < 3.0,
@@ -37,8 +37,8 @@ class AreaConstraintCalibrationTest {
                 Math.abs(savannaPct - 40.0) < 3.0,
                 "Savanne-Klimaanteil war " + savannaPct + "%, erwartet ~40%");
         assertTrue(
-                Math.abs(rainforestPct - 45.0) < 3.0,
-                "Regenwald-Klimaanteil war " + rainforestPct + "%, erwartet ~45%");
+                Math.abs(deciduousPct - 45.0) < 3.0,
+                "Laubwald-Klimaanteil war " + deciduousPct + "%, erwartet ~45%");
     }
 
     @Test

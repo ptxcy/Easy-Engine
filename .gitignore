@@ -44,3 +44,5 @@ bin/
 
 ### Claude ###
 CLAUDE.md
+.claude/
+tools/

@@ -10,6 +10,8 @@ import static org.lwjgl.system.MemoryUtil.*;
 import dev.ptxy.engine.config.BiomeLookUpTable;
 import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.config.TerrainParams;
+import dev.ptxy.engine.config.VegetationConfig;
+import dev.ptxy.engine.map.Biome;
 import dev.ptxy.engine.map.ChunkManager;
 import dev.ptxy.engine.map.VegetationController;
 import dev.ptxy.engine.world.Player;
@@ -116,6 +118,24 @@ public final class TerrainEditorGui {
     private final NumberField tempScaleField = new NumberField();
     private final NumberField humidityScaleField = new NumberField();
     private final NumberField heightTempLapseField = new NumberField();
+
+    private final NumberField grassCoverageField = new NumberField();
+    private final NumberField treeCoverageField = new NumberField();
+    private final NumberField rockCoverageField = new NumberField();
+    private final NumberField clumpScaleField = new NumberField();
+
+    private final NumberField grassWidthMinField = new NumberField();
+    private final NumberField grassWidthMaxField = new NumberField();
+    private final NumberField grassHeightMinField = new NumberField();
+    private final NumberField grassHeightMaxField = new NumberField();
+    private final NumberField treeHeightMinField = new NumberField();
+    private final NumberField treeHeightMaxField = new NumberField();
+    private final NumberField treeRadiusMinField = new NumberField();
+    private final NumberField treeRadiusMaxField = new NumberField();
+    private final NumberField rockHeightMinField = new NumberField();
+    private final NumberField rockHeightMaxField = new NumberField();
+    private final NumberField rockRadiusMinField = new NumberField();
+    private final NumberField rockRadiusMaxField = new NumberField();
 
     private ByteBuffer ttf;
 
@@ -347,6 +367,78 @@ public final class TerrainEditorGui {
 
                 sectionDivider();
                 nk_layout_row_dynamic(ctx, 18, 1);
+                nk_label(ctx, "NUR " + BIOME_NAMES[editBiome] + " - Vegetation", NK_TEXT_LEFT);
+                Biome editBiomeEnum = Biome.fromCell(row, col);
+                VegetationConfig vegConfig = Config.getVegetationConfig();
+                VegetationConfig.VegetationType grassType = vegConfig.type("grass");
+                VegetationConfig.VegetationType treeType = vegConfig.type("tree");
+                VegetationConfig.VegetationType rockType = vegConfig.type("rock");
+
+                grassType
+                        .coveragePercent()
+                        .put(
+                                editBiomeEnum,
+                                grassCoverageField.draw(
+                                        "Gras-Bedeckung %:",
+                                        "Wert 0 bis 100",
+                                        "Wie viel Prozent der Fläche in diesem Biom mit Gras"
+                                                + " bedeckt ist. Wirkt erst nach REGENERATE.",
+                                        grassType.coverage(editBiomeEnum),
+                                        0,
+                                        100));
+                treeType.coveragePercent()
+                        .put(
+                                editBiomeEnum,
+                                treeCoverageField.draw(
+                                        "Baum-Bedeckung %:",
+                                        "Wert 0 bis 5",
+                                        "Wie viel Prozent der Fläche in diesem Biom mit Bäumen"
+                                                + " bedeckt ist -- typische Werte liegen weit unter"
+                                                + " 1%. Wirkt erst nach REGENERATE.",
+                                        treeType.coverage(editBiomeEnum),
+                                        0,
+                                        5));
+                rockType.coveragePercent()
+                        .put(
+                                editBiomeEnum,
+                                rockCoverageField.draw(
+                                        "Fels-Bedeckung %:",
+                                        "Wert 0 bis 5",
+                                        "Wie viel Prozent der Fläche in diesem Biom mit Felsen"
+                                                + " bedeckt ist. Wirkt erst nach REGENERATE.",
+                                        rockType.coverage(editBiomeEnum),
+                                        0,
+                                        5));
+
+                boolean clumpingActiveForBiome =
+                        editBiomeEnum == Biome.TUNDRA_STEPPE
+                                || editBiomeEnum == Biome.SAVANNA_PRAIRIE
+                                || editBiomeEnum == Biome.DECIDUOUS_FOREST;
+                if (clumpingActiveForBiome) {
+                    vegConfig.clumpScale().merge(editBiomeEnum, 0.004, (old, def) -> old);
+                    vegConfig
+                            .clumpScale()
+                            .put(
+                                    editBiomeEnum,
+                                    clumpScaleField.draw(
+                                            "Clump-Skala:",
+                                            "Wert 0.0001 bis 0.02",
+                                            "Wie großflächig sich Vegetation zu dichteren/"
+                                                    + "lichteren Flecken zusammenballt -- kleiner:"
+                                                    + " große, weiträumige Büschel-Zonen. Größer:"
+                                                    + " viele kleine, eng beieinanderliegende"
+                                                    + " Flecken. Wirkt erst nach REGENERATE.",
+                                            vegConfig.clumpScale().get(editBiomeEnum),
+                                            0.0001,
+                                            0.02));
+                } else {
+                    nk_layout_row_dynamic(ctx, 18, 1);
+                    nk_label(
+                            ctx, "(Clumping nur für Tundra/Savanne/Regenwald aktiv)", NK_TEXT_LEFT);
+                }
+
+                sectionDivider();
+                nk_layout_row_dynamic(ctx, 18, 1);
                 nk_label(ctx, "ALLE BIOME - Globale Regler", NK_TEXT_LEFT);
                 params.octaves(
                         (int)
@@ -413,6 +505,137 @@ public final class TerrainEditorGui {
                                 0.05));
 
                 sectionDivider();
+                nk_layout_row_dynamic(ctx, 18, 1);
+                nk_label(
+                        ctx,
+                        "VEGETATION - Globale Regler (alle Biome, sofort wirksam)",
+                        NK_TEXT_LEFT);
+                grassType
+                        .scale()
+                        .put(
+                                "widthMin",
+                                grassWidthMinField.draw(
+                                        "Gras Breite min:",
+                                        "Wert 0.01 bis 0.3",
+                                        "Minimale Halmbreite in Weltmetern.",
+                                        grassType.scale("widthMin"),
+                                        0.01,
+                                        0.3));
+                grassType
+                        .scale()
+                        .put(
+                                "widthMax",
+                                grassWidthMaxField.draw(
+                                        "Gras Breite max:",
+                                        "Wert 0.01 bis 0.3",
+                                        "Maximale Halmbreite in Weltmetern.",
+                                        grassType.scale("widthMax"),
+                                        0.01,
+                                        0.3));
+                grassType
+                        .scale()
+                        .put(
+                                "heightMin",
+                                grassHeightMinField.draw(
+                                        "Gras Höhe min:",
+                                        "Wert 0.1 bis 3",
+                                        "Minimale Halmhöhe in Weltmetern.",
+                                        grassType.scale("heightMin"),
+                                        0.1,
+                                        3));
+                grassType
+                        .scale()
+                        .put(
+                                "heightMax",
+                                grassHeightMaxField.draw(
+                                        "Gras Höhe max:",
+                                        "Wert 0.1 bis 3",
+                                        "Maximale Halmhöhe in Weltmetern.",
+                                        grassType.scale("heightMax"),
+                                        0.1,
+                                        3));
+                treeType.scale()
+                        .put(
+                                "heightMin",
+                                treeHeightMinField.draw(
+                                        "Baum Höhe min:",
+                                        "Wert 1 bis 30",
+                                        "Minimale Baumhöhe in Weltmetern.",
+                                        treeType.scale("heightMin"),
+                                        1,
+                                        30));
+                treeType.scale()
+                        .put(
+                                "heightMax",
+                                treeHeightMaxField.draw(
+                                        "Baum Höhe max:",
+                                        "Wert 1 bis 30",
+                                        "Maximale Baumhöhe in Weltmetern.",
+                                        treeType.scale("heightMax"),
+                                        1,
+                                        30));
+                treeType.scale()
+                        .put(
+                                "radiusMin",
+                                treeRadiusMinField.draw(
+                                        "Baum Radius min:",
+                                        "Wert 0.2 bis 5",
+                                        "Minimaler Kronenradius-Faktor.",
+                                        treeType.scale("radiusMin"),
+                                        0.2,
+                                        5));
+                treeType.scale()
+                        .put(
+                                "radiusMax",
+                                treeRadiusMaxField.draw(
+                                        "Baum Radius max:",
+                                        "Wert 0.2 bis 5",
+                                        "Maximaler Kronenradius-Faktor.",
+                                        treeType.scale("radiusMax"),
+                                        0.2,
+                                        5));
+                rockType.scale()
+                        .put(
+                                "heightMin",
+                                rockHeightMinField.draw(
+                                        "Fels Höhe min:",
+                                        "Wert 0.1 bis 3",
+                                        "Minimale Felshöhe in Weltmetern.",
+                                        rockType.scale("heightMin"),
+                                        0.1,
+                                        3));
+                rockType.scale()
+                        .put(
+                                "heightMax",
+                                rockHeightMaxField.draw(
+                                        "Fels Höhe max:",
+                                        "Wert 0.1 bis 3",
+                                        "Maximale Felshöhe in Weltmetern.",
+                                        rockType.scale("heightMax"),
+                                        0.1,
+                                        3));
+                rockType.scale()
+                        .put(
+                                "radiusMin",
+                                rockRadiusMinField.draw(
+                                        "Fels Radius min:",
+                                        "Wert 0.1 bis 3",
+                                        "Minimaler Felsradius-Faktor.",
+                                        rockType.scale("radiusMin"),
+                                        0.1,
+                                        3));
+                rockType.scale()
+                        .put(
+                                "radiusMax",
+                                rockRadiusMaxField.draw(
+                                        "Fels Radius max:",
+                                        "Wert 0.1 bis 3",
+                                        "Maximaler Felsradius-Faktor.",
+                                        rockType.scale("radiusMax"),
+                                        0.1,
+                                        3));
+
+                sectionDivider();
                 nk_layout_row_dynamic(ctx, 24, 1);
                 try (MemoryStack vegStack = stackPush()) {
                     ByteBuffer vegetationActive =
@@ -462,7 +685,7 @@ public final class TerrainEditorGui {
                 nk_layout_row_dynamic(ctx, 30, 1);
                 if (nk_button_label(ctx, "Speichern (überschreibt SceneConfig.json)")) {
                     try {
-                        Config.saveTerrainParams();
+                        Config.saveConfig();
                         saveStatus = "Gespeichert -- SceneConfig.json aktualisiert.";
                     } catch (RuntimeException e) {
                         saveStatus = "Fehler beim Speichern: " + e.getMessage();

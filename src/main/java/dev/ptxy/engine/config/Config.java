@@ -19,6 +19,7 @@ public final class Config {
     private static final BiomeLookUpTable BIOMES_LOOK_UP_TABLE;
     private static final TerrainParams TERRAIN_PARAMS;
     private static final VegetationConfig VEGETATION_CONFIG;
+    private static final BiomeBlendConfig BIOME_BLEND_CONFIG;
 
     static {
         InputStream is = Config.class.getResourceAsStream("/SceneConfig.json");
@@ -38,6 +39,7 @@ public final class Config {
         BIOMES_LOOK_UP_TABLE = BiomeLookUpTable.fromConfig();
         TERRAIN_PARAMS = TerrainParams.fromTerrainConfig(TERRAIN_CONFIG);
         VEGETATION_CONFIG = VegetationConfig.fromConfig();
+        BIOME_BLEND_CONFIG = BiomeBlendConfig.fromConfig();
     }
 
     private Config() {
@@ -87,11 +89,15 @@ public final class Config {
         return VEGETATION_CONFIG;
     }
 
+    public static BiomeBlendConfig getBiomeBlendConfig() {
+        return BIOME_BLEND_CONFIG;
+    }
+
     public static TerrainParams getTerrainParams() {
         return TERRAIN_PARAMS;
     }
 
-    public static String saveTerrainParams() {
+    public static String saveConfig() {
         JsonObject terrain = getTerrainJsonObject();
         terrain.addProperty("heightAmplitude", TERRAIN_PARAMS.heightAmplitude());
 
@@ -110,6 +116,27 @@ public final class Config {
         biomeTable.add("redistribution", toJsonArray(BIOMES_LOOK_UP_TABLE.redistribution()));
         biomeTable.add(
                 "valleyRedistribution", toJsonArray(BIOMES_LOOK_UP_TABLE.valleyRedistribution()));
+
+        JsonObject vegetation = getTerrainJsonObject().getAsJsonObject("vegetation");
+        JsonObject clumpScale = vegetation.getAsJsonObject("clumpScale");
+        for (var entry : VEGETATION_CONFIG.clumpScale().entrySet()) {
+            clumpScale.addProperty(entry.getKey().name(), entry.getValue());
+        }
+        JsonObject types = vegetation.getAsJsonObject("types");
+        for (var typeEntry : VEGETATION_CONFIG.types().entrySet()) {
+            JsonObject typeJson = types.getAsJsonObject(typeEntry.getKey());
+            VegetationConfig.VegetationType type = typeEntry.getValue();
+
+            JsonObject coverageJson = typeJson.getAsJsonObject("coveragePercent");
+            for (var coverageEntry : type.coveragePercent().entrySet()) {
+                coverageJson.addProperty(coverageEntry.getKey().name(), coverageEntry.getValue());
+            }
+
+            JsonObject scaleJson = typeJson.getAsJsonObject("scale");
+            for (var scaleEntry : type.scale().entrySet()) {
+                scaleJson.addProperty(scaleEntry.getKey(), scaleEntry.getValue());
+            }
+        }
 
         String path = System.getProperty("scene.config.source");
         if (path == null) {

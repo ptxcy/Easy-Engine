@@ -7,9 +7,6 @@ import java.util.Arrays;
 public final class VegetationPlacer {
     private static final int FLOATS_PER_NODE = 4;
 
-    private static final double STEEPNESS_ROCK_START = 0.35;
-    private static final double STEEPNESS_ROCK_FULL = 0.75;
-
     private VegetationPlacer() {}
 
     public static float[] place(
@@ -47,9 +44,15 @@ public final class VegetationPlacer {
 
                 double steepness = noiseMap.getSteepness(wx, wz, heightAmplitude);
                 double steepnessFactor =
-                        1.0 - smoothstep(STEEPNESS_ROCK_START, STEEPNESS_ROCK_FULL, steepness);
+                        1.0
+                                - smoothstep(
+                                        vegConfig.steepnessDampenStart(),
+                                        vegConfig.steepnessDampenFull(),
+                                        steepness);
                 double clumpFactor =
-                        organicClumpingEnabled ? noiseMap.getVegetationClumpFactor(wx, wz) : 1.0;
+                        organicClumpingEnabled
+                                ? noiseMap.getVegetationClumpFactor(wx, wz, blend)
+                                : 1.0;
                 if (hash >= coverage * steepnessFactor * clumpFactor) continue;
 
                 float wy = (float) blend.height() * heightAmplitude;
@@ -66,16 +69,30 @@ public final class VegetationPlacer {
         return Arrays.copyOf(buffer, count * FLOATS_PER_NODE);
     }
 
+    // Coverage percentages between neighboring biomes can differ by orders of magnitude (e.g.
+    // savanna vs. deciduous forest tree density). Blending them arithmetically lets the denser
+    // neighbor's rate dominate far into the sparser biome's territory. Blending in log space
+    // instead computes a weighted geometric mean, which is the natural way to interpolate a
+    // rate/density across such a range while staying just as continuous in the weights.
+    private static final double MIN_COVERAGE_PERCENT = 1e-4;
+
     private static double blendedCoverage(
             VegetationConfig.VegetationType type, Map.BiomeBlend blend) {
         if (blend.biome() == Biome.ALPINE) {
             return type.coverage(Biome.ALPINE) / 100.0;
         }
         Map.BiomeWeights weights = blend.weights();
-        return (weights.tundra() * type.coverage(Biome.TUNDRA_STEPPE)
-                        + weights.savanna() * type.coverage(Biome.SAVANNA_PRAIRIE)
-                        + weights.rainforest() * type.coverage(Biome.RAINFOREST))
-                / 100.0;
+        double logCoverage =
+                weights.tundra() * logCoveragePercent(type.coverage(Biome.TUNDRA_STEPPE))
+                        + weights.savanna()
+                                * logCoveragePercent(type.coverage(Biome.SAVANNA_PRAIRIE))
+                        + weights.deciduousForest()
+                                * logCoveragePercent(type.coverage(Biome.DECIDUOUS_FOREST));
+        return Math.exp(logCoverage) / 100.0;
+    }
+
+    private static double logCoveragePercent(double coveragePercent) {
+        return Math.log(Math.max(coveragePercent, MIN_COVERAGE_PERCENT));
     }
 
     private static double smoothstep(double edge0, double edge1, double x) {

@@ -4,9 +4,11 @@ import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex2
 import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex3DVariant;
 import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex4DVariant;
 import de.articdive.jnoise.pipeline.JNoise;
+import dev.ptxy.engine.config.BiomeBlendConfig;
 import dev.ptxy.engine.config.BiomeLookUpTable;
 import dev.ptxy.engine.config.Config;
 import dev.ptxy.engine.config.TerrainParams;
+import dev.ptxy.engine.config.VegetationConfig;
 import java.util.Arrays;
 import java.util.Random;
 import org.apache.logging.log4j.LogManager;
@@ -20,17 +22,19 @@ public final class Map {
     private final JNoise humidityGen;
     private final JNoise borderWarpXGen;
     private final JNoise borderWarpZGen;
-    private final JNoise vegetationClumpGen;
     private final long seed;
 
+    // One independent noise field per biome (own seed; frequency read live from
+    // vegetation.clumpScale in SceneConfig.json on every call, not cached, so debug-panel edits
+    // take effect immediately) instead of a single field shared by every biome — otherwise tuning
+    // one biome's clump scale (e.g. bigger, sparser tree groves for savanna) would also reshape
+    // tundra's and deciduous forest's clumping.
+    private final JNoise tundraClumpGen;
+    private final JNoise savannaClumpGen;
+    private final JNoise deciduousClumpGen;
+    private final JNoise alpineClumpGen;
+
     private final double[][] areaWeight;
-
-    private static final double BORDER_WARP_SCALE = 1.0 / 450.0;
-    private static final double BORDER_WARP_DISTANCE_METERS = 120.0;
-
-    private static final double VEGETATION_CLUMP_SCALE = 0.004;
-    private static final double VEGETATION_CLUMP_CONTRAST_LOW = 0.3;
-    private static final double VEGETATION_CLUMP_CONTRAST_HIGH = 0.7;
 
     public Map(long seed) {
         this.seed = seed;
@@ -39,17 +43,43 @@ public final class Map {
         this.humidityGen = simplex(seed + 2);
         this.borderWarpXGen = simplex(seed + 3);
         this.borderWarpZGen = simplex(seed + 4);
-        this.vegetationClumpGen = simplex(seed + 5);
+        this.tundraClumpGen = simplex(seed + 5);
+        this.savannaClumpGen = simplex(seed + 6);
+        this.deciduousClumpGen = simplex(seed + 7);
+        this.alpineClumpGen = simplex(seed + 8);
         this.areaWeight = calibrateAreaWeights();
     }
 
-    public double getVegetationClumpFactor(double x, double z) {
-        double raw =
-                (vegetationClumpGen.evaluateNoise(
-                                        x * VEGETATION_CLUMP_SCALE, z * VEGETATION_CLUMP_SCALE)
-                                + 1.0)
-                        * 0.5;
-        return smoothstep(VEGETATION_CLUMP_CONTRAST_LOW, VEGETATION_CLUMP_CONTRAST_HIGH, raw);
+    /**
+     * Blends each of the three main biomes' own clump noise by the same weights used for
+     * height/color blending, so the clumping pattern stays continuous across biome borders instead
+     * of hard-switching noise fields at the boundary. Alpine has no blend partner (see
+     * blendedCoverage in VegetationPlacer), so it is used as-is with no mixing.
+     */
+    public double getVegetationClumpFactor(double x, double z, BiomeBlend blend) {
+        VegetationConfig vegConfig = Config.getVegetationConfig();
+        if (blend.biome() == Biome.ALPINE) {
+            return clumpFactorFor(alpineClumpGen, vegConfig.clumpScale(Biome.ALPINE), x, z);
+        }
+        BiomeWeights w = blend.weights();
+        return w.tundra()
+                        * clumpFactorFor(
+                                tundraClumpGen, vegConfig.clumpScale(Biome.TUNDRA_STEPPE), x, z)
+                + w.savanna()
+                        * clumpFactorFor(
+                                savannaClumpGen, vegConfig.clumpScale(Biome.SAVANNA_PRAIRIE), x, z)
+                + w.deciduousForest()
+                        * clumpFactorFor(
+                                deciduousClumpGen,
+                                vegConfig.clumpScale(Biome.DECIDUOUS_FOREST),
+                                x,
+                                z);
+    }
+
+    private static double clumpFactorFor(JNoise gen, double scale, double x, double z) {
+        VegetationConfig vegConfig = Config.getVegetationConfig();
+        double raw = (gen.evaluateNoise(x * scale, z * scale) + 1.0) * 0.5;
+        return smoothstep(vegConfig.clumpContrastLow(), vegConfig.clumpContrastHigh(), raw);
     }
 
     private static double smoothstep(double edge0, double edge1, double x) {
@@ -58,15 +88,19 @@ public final class Map {
     }
 
     private double warpedX(double x, double z) {
+        BiomeBlendConfig blendConfig = Config.getBiomeBlendConfig();
+        double scale = 1.0 / blendConfig.borderWarpPeriodMeters();
         return x
-                + borderWarpXGen.evaluateNoise(x * BORDER_WARP_SCALE, z * BORDER_WARP_SCALE)
-                        * BORDER_WARP_DISTANCE_METERS;
+                + borderWarpXGen.evaluateNoise(x * scale, z * scale)
+                        * blendConfig.borderWarpDistanceMeters();
     }
 
     private double warpedZ(double x, double z) {
+        BiomeBlendConfig blendConfig = Config.getBiomeBlendConfig();
+        double scale = 1.0 / blendConfig.borderWarpPeriodMeters();
         return z
-                + borderWarpZGen.evaluateNoise(x * BORDER_WARP_SCALE, z * BORDER_WARP_SCALE)
-                        * BORDER_WARP_DISTANCE_METERS;
+                + borderWarpZGen.evaluateNoise(x * scale, z * scale)
+                        * blendConfig.borderWarpDistanceMeters();
     }
 
     private JNoise simplex(long seed) {
@@ -253,8 +287,6 @@ public final class Map {
         return height;
     }
 
-    private static final double ALPINE_HEIGHT_FRACTION = 0.62;
-
     public Biome getBiome(double x, double z) {
         return getBiomeAndHeight(x, z).biome();
     }
@@ -273,7 +305,7 @@ public final class Map {
         double heightAmplitude = Config.getTerrainParams().heightAmplitude();
         double worldHeight = sample.height() * heightAmplitude;
         Biome biome;
-        if (worldHeight >= ALPINE_HEIGHT_FRACTION * heightAmplitude) {
+        if (worldHeight >= Config.getBiomeBlendConfig().alpineHeightFraction() * heightAmplitude) {
             biome = Biome.ALPINE;
         } else {
             int[] cell = sample.nearestCell();
@@ -286,7 +318,7 @@ public final class Map {
         return sampleTerrain(x, z).nearestCell();
     }
 
-    public record BiomeWeights(double tundra, double savanna, double rainforest) {}
+    public record BiomeWeights(double tundra, double savanna, double deciduousForest) {}
 
     public BiomeWeights getBiomeWeights(double x, double z) {
         return sampleTerrain(x, z).weights();
@@ -297,12 +329,8 @@ public final class Map {
         for (int i = 0; i < blend.rows().length; i++) {
             weightByCell[blend.rows()[i] * 3 + blend.cols()[i]] += blend.weights()[i];
         }
-        return new BiomeWeights(weightByCell[0], weightByCell[4], weightByCell[8]);
+        return new BiomeWeights(weightByCell[0], weightByCell[4], weightByCell[5]);
     }
-
-    private static final double WORLD_BLEND_WIDTH_BASE = 20.0;
-    private static final double WORLD_BLEND_WIDTH_PER_HEIGHT_METER = 1.0;
-    private static final double MAX_HEIGHT_GAP_METERS_FOR_BLEND_WIDTH = 50.0;
 
     private static final double GRADIENT_SAMPLE_STEP = 5.0;
 
@@ -360,6 +388,7 @@ public final class Map {
 
         double meanHeight = heightSum / count;
 
+        BiomeBlendConfig blendConfig = Config.getBiomeBlendConfig();
         double[] weight = new double[count];
         double sum = 0;
         for (int i = 0; i < count; i++) {
@@ -384,10 +413,10 @@ public final class Map {
                         Math.min(
                                 Math.abs(cellHeightAtPoint[i] - meanHeight)
                                         * params.heightAmplitude(),
-                                MAX_HEIGHT_GAP_METERS_FOR_BLEND_WIDTH);
+                                blendConfig.maxHeightGapMetersForBlendWidth());
                 double localWidth =
-                        WORLD_BLEND_WIDTH_BASE
-                                + WORLD_BLEND_WIDTH_PER_HEIGHT_METER * heightGapMeters;
+                        blendConfig.worldBlendWidthBaseMeters()
+                                + blendConfig.worldBlendWidthPerHeightMeter() * heightGapMeters;
 
                 weight[i] = Math.exp(-worldGap / localWidth);
             }
